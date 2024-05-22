@@ -1,0 +1,87 @@
+title: "Marginal Analysis Example"
+author: kris Sankaran
+output: readthedown::html_document
+---
+
+```{r}
+library(gamboostLSS)
+library(mixOmics)
+library(SummarizedExperiment)
+library(scDesigner)
+library(splines)
+library(glue)
+library(tidyverse)
+source("../data/helpers.R")
+```
+
+### Mixture of Gaussians
+
+
+### Interpreting PLS-DA
+
+```{r}
+exper <- readRDS("../data/t1d.rds")
+result <- splsda_fit(exper)
+plotIndiv(result$fit)
+```
+
+### PLS-DA Power Analysis
+
+```{r}
+signal_order <- readRDS("../data/t1d_order.rds")
+simulator <- setup_simulator(
+  exper,
+  link_formula = ~outcome2,
+  family = ~ GaussianLSS()
+) |>
+  estimate()
+
+sim_exper <- sample(simulator)
+sim_exper
+```
+
+```{r}
+update_simulator <- function(simulator, n_nonnull, signal_order) {
+  exper <- simulator@template
+  nonnull <- rownames(exper)[signal_order[1:n_nonnull]]
+  simulator |>
+    scDesigner::mutate(any_of(nonnull), link = ~outcome2) |>
+    estimate() |>
+    suppressMessages()
+}
+
+sample_n <- function(simulator, n_sim = 100) {
+  n_original <- ncol(simulator@template)
+  rep_ix <- rep(seq_len(n_original), each = ceiling(n_sim / n_original))
+  new_data <- colData(simulator@template)[rep_ix[1:n_sim], ]
+  new_data$outcome2 <- c(rep("healthy", n_sim / 2), rep("T1D", n_sim / 2))
+
+  sample(simulator, new_data = new_data)
+}
+```
+
+```{r, power-analysis-loop}
+sample_sizes <- 2 * floor(seq(10, 200, length.out = 5) / 2)
+n_nonnull <- round(seq(10, 110, length.out = 4))
+results <- list()
+n_rep <- 1
+
+k <- 1
+for (i in seq_along(n_nonnull)) {
+  simulator <- update_simulator(simulator, n_nonnull = n_nonnull[i], signal_order)
+  for (j in seq_along(sample_sizes)) {
+    for (b in seq_len(n_rep)) {
+      print(glue("run {k}/{length(n_nonnull) * length(sample_sizes) * n_rep}"))
+      results[[k]] <- c(
+        fit = sample_n(simulator, sample_sizes[j]) |>
+          splsda_fit(),
+        n_nonnull = n_nonnull[i],
+        sample_size = sample_sizes[j]
+      )
+      k <- k + 1
+    }
+  }
+}
+```
+
+### Simulator Evaluation

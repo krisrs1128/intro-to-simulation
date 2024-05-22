@@ -40,7 +40,7 @@ exper_histogram(exper_grouped)
 * Modify it so that it accurate reflects the difference between groups for the first three genes.
 
 ```{r}
-sim <- setup_simulator(exper_grouped, ~ 1, ~ GaussianLSS()) |>
+sim <- setup_simulator(exper_grouped, ~1, ~ GaussianLSS()) |>
   estimate()
 
 sample(sim) |>
@@ -49,12 +49,11 @@ sample(sim) |>
 
 ```{r}
 sim <- sim |>
-  mutate(1:3, link = ~ group) |>
+  mutate(1:3, link = ~group) |>
   estimate()
 
 sample(sim) |>
   exper_histogram()
-
 ```
 
 ### Gaussian over Time
@@ -73,7 +72,7 @@ sim <- setup_simulator(
   estimate(nu = 0.01, mstop = 1000)
 
 sample(sim) |>
-  exper_lineplot() +
+  exper_lineplot()
 ```
 
 ```{r}
