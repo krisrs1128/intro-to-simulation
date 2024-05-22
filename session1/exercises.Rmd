@@ -1,0 +1,99 @@
+title: "Marginal Analysis Example"
+author: kris Sankaran
+output: readthedown::html_document
+---
+
+```{r}
+library(gamboostLSS)
+library(scDesigner)
+library(splines)
+library(glue)
+library(tidyverse)
+```
+
+### Using SummarizedExperiment
+
+* How many genera are available in this experiment object?
+* What was the most common phylum in this dataset?
+* What was the average participant age?
+
+```{r}
+atlas <- readRDS("data/atlas.rds")
+
+dim(exper) # 125 genera
+table(rowData(atlas)$Phylum)
+
+mean(colData(atlas)$age)
+
+# or just,
+mean(atlas$age)
+```
+
+### Gaussian Mixture
+
+```{r}
+exper_grouped <- readRDS(url("https://github.com/krisrs1128/talks/raw/master/2024/20240611/data/exper_group.rds"))
+exper_histogram(exper_grouped)
+```
+
+* Explain how the simulation code below works. 
+* Modify it so that it accurate reflects the difference between groups for the first three genes.
+
+```{r}
+sim <- setup_simulator(exper_grouped, ~ 1, ~ GaussianLSS()) |>
+  estimate()
+
+sample(sim) |>
+  exper_histogram()
+```
+
+```{r}
+sim <- sim |>
+  mutate(1:3, link = ~ group) |>
+  estimate()
+
+sample(sim) |>
+  exper_histogram()
+
+```
+
+### Gaussian over Time
+
+```{r}
+exper_ts <- readRDS("data/exper_ts.rds")
+exper_lineplot(exper_ts)
+```
+
+```{r}
+sim <- setup_simulator(
+  exper_ts,
+  ~ ns(time, df = 7) * group,
+  ~ GaussianLSS()
+) |>
+  estimate(nu = 0.01, mstop = 1000)
+
+sample(sim) |>
+  exper_lineplot() +
+```
+
+```{r}
+sim <- sim |>
+  mutate(4:6, link = ~ ns(time, df = 7)) |>
+  estimate(nu = 0.01, mstop = 1000)
+
+sample(sim) |>
+  exper_lineplot()
+```
+
+
+### Using a Simulator
+
+```{r}
+exper <- readRDS("data/atlas.rds")
+sim <- setup_simulator(
+  exper,
+  ~ bmi_group + age + log_depth,
+  ~ ZINBLSS()
+) |>
+  estimate(nu = 0.001, mstop = 100)
+```
