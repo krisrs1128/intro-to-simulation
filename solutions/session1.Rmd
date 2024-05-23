@@ -6,9 +6,10 @@ output: readthedown::html_document
 
 ```{r}
 library(gamboostLSS)
-library(scDesigner)
 library(splines)
 library(tidyverse)
+library(scDesigner)
+source("../data/helpers.R")
 ```
 
 ### Using SummarizedExperiment
@@ -18,9 +19,9 @@ library(tidyverse)
 * What was the average participant age?
 
 ```{r}
-atlas <- readRDS("data/atlas.rds")
+atlas <- readRDS("../data/atlas.rds")
 
-dim(exper) # 125 genera
+dim(atlas) # 125 genera
 table(rowData(atlas)$Phylum)
 
 mean(colData(atlas)$age)
@@ -59,7 +60,7 @@ sample(sim) |>
 ### Gaussian over Time
 
 ```{r}
-exper_ts <- readRDS("data/exper_ts.rds")
+exper_ts <- readRDS("../data/exper_ts.rds")
 exper_lineplot(exper_ts)
 ```
 
@@ -88,7 +89,7 @@ sample(sim) |>
 ### Using a Simulator
 
 ```{r}
-exper <- readRDS("data/atlas.rds")
+exper <- readRDS("../data/atlas.rds")
 sim <- setup_simulator(
   exper,
   ~ bmi_group + age + log_depth,
