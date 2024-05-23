@@ -1,5 +1,6 @@
-title: "Marginal Analysis Example"
-author: kris Sankaran
+---
+title: "Joint Simulation Exercises"
+author: Kris Sankaran
 output: readthedown::html_document
 ---
 
@@ -8,8 +9,6 @@ library(gamboostLSS)
 library(mixOmics)
 library(SummarizedExperiment)
 library(scDesigner)
-library(splines)
-library(glue)
 source("../data/helpers.R")
 ```
 
@@ -43,8 +42,7 @@ update_simulator <- function(simulator, n_nonnull, signal_order) {
   nonnull <- rownames(exper)[signal_order[1:n_nonnull]]
   simulator |>
     mutate(dplyr::any_of(nonnull), link = ~outcome2) |>
-    estimate() |>
-    suppressMessages()
+    estimate()
 }
 ```
 
@@ -59,7 +57,7 @@ for (i in seq_along(n_nonnull)) {
   simulator <- update_simulator(simulator, n_nonnull = n_nonnull[i], signal_order)
   for (j in seq_along(sample_sizes)) {
     for (b in seq_len(n_rep)) {
-      print(glue("run {k}/{length(n_nonnull) * length(sample_sizes) * n_rep}"))
+      print("run ", k, "/20")
       results[[k]] <- c(
         fit = sample_n(simulator, sample_sizes[j]) |>
           splsda_fit(),

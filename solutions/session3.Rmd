@@ -1,0 +1,14 @@
+---
+title: "Joint Simulation Exercises"
+author: Kris Sankaran
+output: readthedown::html_document
+---
+
+```{r}
+library(gamboostLSS)
+library(mixOmics)
+library(SummarizedExperiment)
+library(scDesigner)
+library(glue)
+source("../data/helpers.R")
+```

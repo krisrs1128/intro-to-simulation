@@ -1,5 +1,6 @@
+---
 title: "Marginal Analysis Example"
-author: kris Sankaran
+author: Kris Sankaran
 output: readthedown::html_document
 ---
 
