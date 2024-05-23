@@ -6,8 +6,10 @@ output: readthedown::html_document
 
 ```{r}
 library(gamboostLSS)
+library(glue)
 library(mixOmics)
 library(SummarizedExperiment)
+library(tidyverse)
 library(scDesigner)
 source("../data/helpers.R")
 ```
@@ -46,28 +48,37 @@ update_simulator <- function(simulator, n_nonnull, signal_order) {
 }
 ```
 
-```{r, power-analysis-loop}
-sample_sizes <- 2 * floor(seq(10, 200, length.out = 5) / 2)
-n_nonnull <- round(seq(10, 110, length.out = 4))
-results <- list()
-n_rep <- 1
+```{r, power-analysis-params}
+configs <- expand.grid(
+  sample_size = floor(seq(10, 200, length.out = 5)),
+  n_nonnull = floor(seq(10, 110, length.out = 4)),
+  n_rep = 1
+)
 
-k <- 1
-for (i in seq_along(n_nonnull)) {
+metrics <- vector(length = nrow(configs))
+```
+
+```{r power-analysis-loop}
+for (i in seq_len(nrow(config))) {
   simulator <- update_simulator(simulator, n_nonnull = n_nonnull[i], signal_order)
-  for (j in seq_along(sample_sizes)) {
-    for (b in seq_len(n_rep)) {
-      print("run ", k, "/20")
-      results[[k]] <- c(
-        fit = sample_n(simulator, sample_sizes[j]) |>
-          splsda_fit(),
-        n_nonnull = n_nonnull[i],
-        sample_size = sample_sizes[j]
-      )
-      k <- k + 1
-    }
-  }
+  metrics[i] <- sample_n(simulator, config$sample_size[j]) |>
+    splsda_fit() %>%
+    .[["auc"]]
+  print(glue("run {k}/{nrow(config)}"))
 }
+```
+
+```{r}
+configs$metrics <- metrics
+
+ggplot(configs) +
+  geom_point(aes(sample_size, metric))
+
+```
+
+```{r}
+ggplot(results) +
+  geom_point()
 ```
 
 ### Simulator Evaluation

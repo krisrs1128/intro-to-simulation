@@ -18,12 +18,12 @@ exper_lineplot <- function(exper) {
     ylim(-2, 3)
 }
 
-splsda_fit <- function(exper, outcome_var = "outcome2", ncomp = 5, keepX = NULL) {
+splsda_fit <- function(exper, outcome_var = "outcome2", ncomp = 2, keepX = NULL) {
   if (is.null(keepX)) {
     keepX <- rep(30, ncomp)
   }
 
   fit <- splsda(t(assay(exper)), colData(exper)$outcome2, ncomp = ncomp, keepX = keepX)
-  errs <- perf(fit, nrepeat = 10, folds = 5, auc = TRUE)
-  list(auc = errs$auc, fit = fit)
+  errs <- perf(fit, nrepeat = 5, folds = 5, auc = TRUE)
+  list(auc = errs$auc[[ncomp]]["AUC.mean"], fit = fit)
 }
