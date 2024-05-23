@@ -83,7 +83,7 @@ run_ancombc2 <- function(tseObj, assay_name = "counts", fixed_formula, p_adj_met
 #' @param formula the character string expresses how the microbial absolute abundances for each taxon depend on the fixed effects in metadata.
 #' @param p_adj_method the multiple correction procedure to be used.
 #' @return a data frame with log fold changes, p_values, q_valuesh.
-#' @importFrom edgeR voom lmFit eBayes topTable
+#' @importFrom limma voom lmFit eBayes topTable
 #' @importFrom dplyr rownames_to_column
 #' @export
 run_limma <- function(dge, metaD, formula, p_adj_method = "BH") {

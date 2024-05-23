@@ -14,8 +14,8 @@ Depends:
     R (>= 2.10)
 Import:
     SummarizedExperiment,
-    edgeR,
     ggplot2,
+    limma,
     mixOmics,
     scDesigner
 LazyData: true
