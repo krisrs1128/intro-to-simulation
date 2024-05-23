@@ -5,11 +5,11 @@ output: readthedown::html_document
 ---
 
 ```{r}
+library(MIGsim) # 
 library(gamboostLSS)
 library(splines)
 library(tidyverse)
 library(scDesigner)
-source("../data/helpers.R")
 ```
 
 ### Using SummarizedExperiment
@@ -101,9 +101,11 @@ sim <- setup_simulator(
 Visualizing simulator quality.
 
 ```{r}
+exper_sim <- sample(exper)
+
 combined <- bind_rows(
   real = pivot_experiment(exper), # real data
-  simulated = pivot_experiment(sample(sim)), # simulated
+  simulated = pivot_experiment(exper_sim), # simulated
   .id = "source"
 )
 
@@ -134,5 +136,5 @@ combined |>
 ### Apply to Power Analysis
 
 ```{r}
-
+run_DA_method(assay(exper_sim), colData(exper_sim), "LIMMA_voom")
 ```

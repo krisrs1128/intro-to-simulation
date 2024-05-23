@@ -1,0 +1,15 @@
+Package: MIGsim
+Title: Functions for the Melbourne Integrative Genetics course on simulation.
+Version: 0.0.0.9000
+Authors@R: 
+    person("Kris", "Sankaran", , "ksankaran@wisc.edu", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0002-9415-1971"))
+Description: So we don't spend too much time loading random scripts during course sessions, we just load this library.
+License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
+    license
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.1
+Depends: 
+    R (>= 2.10)
+LazyData: true
