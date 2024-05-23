@@ -86,7 +86,7 @@ sample(sim) |>
 ```
 
 
-### Using a Simulator
+### Estimate and Visualize
 
 ```{r}
 exper <- readRDS("../data/atlas.rds")
@@ -96,4 +96,43 @@ sim <- setup_simulator(
   ~ ZINBLSS()
 ) |>
   estimate(nu = 0.001, mstop = 100)
+```
+
+Visualizing simulator quality.
+
+```{r}
+combined <- bind_rows(
+  real = pivot_experiment(exper), # real data
+  simulated = pivot_experiment(sample(sim)), # simulated
+  .id = "source"
+)
+
+high_abundance <- combined |>
+  filter(source == "real") |>
+  group_by(feature) |>
+  summarise(median = median(value)) |>
+  slice_max(median, n = 20)
+
+combined |>
+  filter(feature %in% high_abundance$feature) |>
+  ggplot() +
+  geom_boxplot(
+    aes(asinh(value), reorder(feature, value, median), fill = source)
+  )
+```
+
+```{r}
+combined |>
+  filter(feature %in% high_abundance$feature) |>
+  ggplot() +
+  geom_point(
+    aes(age, asinh(value), col = source), size = 0.4, alpha = 0.3
+  ) +
+  facet_wrap(~ reorder(feature, value, median), scales = "free_y")
+```
+
+### Apply to Power Analysis
+
+```{r}
+
 ```
