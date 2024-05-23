@@ -85,7 +85,7 @@ run_ancombc2 <- function(tseObj, assay_name = "counts", fixed_formula, p_adj_met
 #' @return a data frame with log fold changes, p_values, q_valuesh.
 #' @importFrom edgeR voom lmFit eBayes topTable
 #' @importFrom dplyr rownames_to_column
-#'
+#' @export
 run_limma <- function(dge, metaD, formula, p_adj_method = "BH") {
   design <- model.matrix(formula, data = metaD)
   baysfit <- voom(dge, design) |> # account for differences in uncertainty

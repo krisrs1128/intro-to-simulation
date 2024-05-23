@@ -5,13 +5,13 @@ output: readthedown::html_document
 ---
 
 ```{r}
+library(MIGsim)
+library(SummarizedExperiment)
 library(gamboostLSS)
 library(glue)
 library(mixOmics)
-library(SummarizedExperiment)
 library(tidyverse)
 library(scDesigner)
-source("../data/helpers.R")
 ```
 
 ### Interpreting PLS-DA

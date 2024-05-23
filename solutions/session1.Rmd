@@ -5,7 +5,7 @@ output: readthedown::html_document
 ---
 
 ```{r}
-library(MIGsim) # 
+library(MIGsim) # devtools::install_github("krisrs1128/intro-to-simulation/MIGsim")
 library(gamboostLSS)
 library(splines)
 library(tidyverse)
@@ -19,8 +19,7 @@ library(scDesigner)
 * What was the average participant age?
 
 ```{r}
-atlas <- readRDS("../data/atlas.rds")
-
+data(atlas)
 dim(atlas) # 125 genera
 table(rowData(atlas)$Phylum)
 
@@ -33,7 +32,7 @@ mean(atlas$age)
 ### Gaussian Mixture
 
 ```{r}
-exper_grouped <- readRDS(url("https://github.com/krisrs1128/talks/raw/master/2024/20240611/data/exper_group.rds"))
+data(exper_grouped)
 exper_histogram(exper_grouped)
 ```
 
@@ -60,7 +59,7 @@ sample(sim) |>
 ### Gaussian over Time
 
 ```{r}
-exper_ts <- readRDS("../data/exper_ts.rds")
+data(exper_ts)
 exper_lineplot(exper_ts)
 ```
 
@@ -89,9 +88,8 @@ sample(sim) |>
 ### Estimate and Visualize
 
 ```{r}
-exper <- readRDS("../data/atlas.rds")
 sim <- setup_simulator(
-  exper,
+  atlas,
   ~ bmi_group + age + log_depth,
   ~ ZINBLSS()
 ) |>
@@ -101,22 +99,16 @@ sim <- setup_simulator(
 Visualizing simulator quality.
 
 ```{r}
-exper_sim <- sample(exper)
+atlas_ <- sample(atlas)
 
 combined <- bind_rows(
-  real = pivot_experiment(exper), # real data
-  simulated = pivot_experiment(exper_sim), # simulated
+  real = pivot_experiment(atlas), # real data
+  simulated = pivot_experiment(atlas_), # simulated
   .id = "source"
 )
 
-high_abundance <- combined |>
-  filter(source == "real") |>
-  group_by(feature) |>
-  summarise(median = median(value)) |>
-  slice_max(median, n = 20)
-
 combined |>
-  filter(feature %in% high_abundance$feature) |>
+  filter(feature %in% select_features(atlas)) |>
   ggplot() +
   geom_boxplot(
     aes(asinh(value), reorder(feature, value, median), fill = source)
@@ -125,7 +117,7 @@ combined |>
 
 ```{r}
 combined |>
-  filter(feature %in% high_abundance$feature) |>
+  filter(feature %in% select_features(atlas)) |>
   ggplot() +
   geom_point(
     aes(age, asinh(value), col = source), size = 0.4, alpha = 0.3
@@ -136,5 +128,5 @@ combined |>
 ### Apply to Power Analysis
 
 ```{r}
-run_DA_method(assay(exper_sim), colData(exper_sim), "LIMMA_voom")
+run_DA_method(assay(atlas_), colData(atlas_), "LIMMA_voom")
 ```
