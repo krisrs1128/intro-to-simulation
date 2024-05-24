@@ -36,7 +36,7 @@ set.seed(202406)
 theme_set(theme_classic())
 ```
 
-### Using SummarizedExperiment
+# Using SummarizedExperiment
 
 `scDesigner`'s interface is built with `SummarizedExperiment` in mind. These
 data structures simplify manipulation of data from sequencing experiments. For
@@ -70,7 +70,7 @@ atlas[, atlas$bmi_group == "obese"] |>
   rowMeans()
 ```
 
-### A Gaussian Example
+# A Gaussian Example
 
 Here's a toy dataset to illustrate the main idea of GAMLSS. Each panel in the
 plot below represents a different feature (e.g., taxon, gene, metabolite...).
@@ -111,7 +111,7 @@ sample(sim) |>
   exper_lineplot()
 ```
 
-### Atlas Estimation
+# Atlas Estimation
 
 Next, let's train a simulator to fit the Atlas dataset. We'll use two
 covariates. `bmi_group` is the main covariate of interest -- we want to see how
@@ -134,7 +134,7 @@ sim <- setup_simulator(atlas, fmla, ~ ZINBLSS()) |>
   estimate(nu = 0.01, mstop = 1000)
 ```
 
-### Critique
+# Critique
 
 **Exercise**: How well does this simulator approximate the original template?
 *The block below
@@ -161,7 +161,7 @@ ggplot(combined) +
   facet_grid(. ~ source)
 ```
 
-### Power Analysis Loop
+# Power Analysis Loop
 
 To run a power analysis, we need to define datasets that have known ground truth
 associations. Then, we can run any differential abundance methods we want and

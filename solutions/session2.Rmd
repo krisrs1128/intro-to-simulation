@@ -4,9 +4,20 @@ author: Kris Sankaran
 output: rmdformats::readthedown
 ---
 
+How can we choose sample sizes in more complex analysis bioinformatic workflows,
+where we simultaneously analyze many features (taxa, genes, metaabolites) in
+concert? While traditional, analytical power analysis often breaks down,
+simulation can still be effective. We'll look at a concrete case study where we
+try to choose a good sample size for a PLS-DA analysis of the Type I Diabetes
+gut microbiome.
+
 ```{r, include = FALSE}
 knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 ```
+
+First, we'll load the required packages. Relative to session 1, the only
+additional package that we need is `mixOmics`. This can be installed using
+`BiocManager::install('mixOmics')`.
 
 ```{r}
 suppressPackageStartupMessages({
@@ -22,31 +33,62 @@ set.seed(202406)
 theme_set(theme_classic())
 ```
 
-### Interpreting PLS-DA
+# Interpreting PLS-DA
+
+The T1D dataset below includes measures of 427 metabolites from the gut
+microbiomes of 40 T1D patients and 61 healthy controls. These data were
+originally published in (tk fill in some more explanationa bout the dataset).
 
 ```{r}
 data(t1d)
+```
+
+The output that we care about are the PLD-DA scores and loadings. The wrapper
+below directly gives us this output without our having to explicitly set
+hyerparameters, though you can [look here](https://github.com/krisrs1128/intro-to-simulation/blob/main/MIGsim/R/methods.R) 
+to see how the function was defined.
+
+Exercise: Discuss the output of `plotIndiv`. How does `plotLoadings` shape your interpretation?
+
+```{r}
 result <- splsda_fit(t1d)
 plotIndiv(result$fit)
 plotLoadings(result$fit)
 ```
 
-### Simualtor Estimation
+# Estimation
+
+Exercise: Let's estimate a simulator where every protein is allowed ot vary
+across T1D type. Since the data have already been centered log-ratio
+transformed, it's okay to treat these as Gaussian. 
 
 ```{r}
-data(t1d_order)
 simulator <- setup_simulator(t1d, link_formula = ~outcome2, family = ~ GaussianLSS()) |>
   estimate(mstop = 100)
-
-sim_exper <- sample(simulator)
-sim_exper
 ```
 
-### Simulator Evaluation
+# Evaluation
+
+Last time, we saw how we could visualize marginal simulator quality. How can we
+tell whether a joint simulator is working, though? One simple check is to
+analyze the pairwise correlations. Since the copula model is designed to capture
+second-order moments, it should at the very least effectively capture the
+correlations.
+
+We've written a small helper that visualizes the pairwise protein-protein
+correlations from both the real and the simulated datasets. We seem to be often
+overestimating the correlation strength. This is likely a consequence of the
+high-dimensionality of the problem.
 
 ```{r}
+sim_exper <- sample(simulator)
 correlation_hist(t1d, sim_exper)
 ```
+
+To address this, let's modify the `copula_def` argument of `setup_simulator` so
+that it uses a covariance estimator that's well-suited to high-dimensional
+settings. This has the desired effect of shrinking more of the estimated
+correlations down to zero, though we seem to have somewhat overcorrected.
 
 ```{r}
 simulator <- setup_simulator(
@@ -61,8 +103,19 @@ sim_exper <- sample(simulator)
 correlation_hist(t1d, sim_exper)
 ```
 
+# PLS-DA Power Analysis
 
-### PLS-DA Power Analysis
+Now that we have a simulator, we can run a power analysis. In theory, we could
+look at how any summary from the PLS-DA output varies as the sample size
+increases. The most natural one, though, is simply to see how classifier
+performance improves as we gather more samples. Specifically, we'll measure the
+holdout Area Under the Curve (auc), a measure of how well the trains PLS-DA
+classifier balance precision and recall on new samples.
+
+Moreover, we'll study the effect of sparsity -- what happens when many features
+have no relationship at all with the response? We'll also simulate three
+hypothetical datasets for each sample size and sparsity level. All
+configurations of interest are stored in the `config` matrix below.
 
 ```{r, power-analysis-params}
 config <- expand.grid(
@@ -71,7 +124,16 @@ config <- expand.grid(
   n_null = floor(seq(317, 417, length.out = 4)),
   metrics = NA
 )
+
+data(t1d_order)
 ```
+
+**Exercise**: Finally, we're in a position to generate synthetic data and
+*evaluate
+PLS-DA performance. Fill in the block below to:
+
+* Update the simulator for each `i`. Remember that the original `simulator` defined below assumes that all proteins are associated with T1D.  
+* Sample from the updated simulator. Given the simulator, you can use the spls_fit function to compute its AUC.
 
 ```{r power-analysis-loop}
 for (i in seq_len(nrow(config))) {
@@ -86,6 +148,10 @@ for (i in seq_len(nrow(config))) {
   print(glue("run {i}/{nrow(config)}"))
 }
 ```
+
+Finally, we can visualize variation in performance. How do you think the changes
+in performance might influence the discoveries that are possible with the
+resulting models? How might they justify some investments over others?
 
 ```{r}
 ggplot(config, aes(sample_size, metrics, col = factor(n_null))) +
