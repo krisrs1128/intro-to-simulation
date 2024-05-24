@@ -19,5 +19,5 @@ splsda_fit <- function(exper, outcome_var = "outcome2", ncomp = 2, keepX = NULL,
 
   fit <- splsda(t(assay(exper)), colData(exper)$outcome2, ncomp = ncomp, keepX = keepX)
   errs <- perf(fit, nrepeat = nrepeat, folds = folds, auc = TRUE)
-  list(auc = errs$auc[[ncomp]]["AUC.mean"], fit = fit)
+  list(auc = errs$auc[[ncomp]][["AUC.mean"]], fit = fit)
 }

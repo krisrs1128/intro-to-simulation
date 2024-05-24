@@ -1,14 +1,18 @@
 ---
-title: "Joint Simulation Exercises"
+title: "Integrative Simulation Exercises"
 author: Kris Sankaran
-output: readthedown::html_document
+output: rmdformats::readthedown
 ---
 
 ```{r}
-library(gamboostLSS)
-library(mixOmics)
-library(SummarizedExperiment)
-library(scDesigner)
-library(glue)
-source("../data/helpers.R")
+suppressPackageStartupMessages({
+  library(MIGsim)
+  library(SummarizedExperiment)
+  library(gamboostLSS)
+  library(glue)
+  library(mixOmics)
+  library(ggplot2)
+  library(scDesigner)
+})
+set.seed(20240611)
 ```

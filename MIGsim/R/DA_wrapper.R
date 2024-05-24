@@ -5,7 +5,7 @@
 #' @return The output of the DA method (log fold change across groups, pvalue, adj.pvalue)
 #' @export
 #' @importFrom edgeR DGEList calcNormFactors
-run_DA_method <- function(exper, DA_method) {
+differential_analysis <- function(exper, DA_method) {
   raw_data <- assay(exper)
   meta_data <- colData(exper)
 
