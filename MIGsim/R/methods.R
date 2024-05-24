@@ -1,5 +1,5 @@
 #' Run SPLS-DA and Collect Metrics
-#' 
+#'
 #' Wrapper to apply mixOmics' sparse pls discriminant analysis ' on a
 #' SummarizedExperiment object.
 #'

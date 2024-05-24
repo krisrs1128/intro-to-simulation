@@ -25,7 +25,7 @@ run_DA_method <- function(exper, DA_method) {
     out <- run_limma(
       dge = dgeObj,
       metaD = meta_data,
-      formula = ~ bmi_group,
+      formula = ~bmi_group,
       p_adj_method = "BH"
     )
   } else if (DA_method == "DESeq2") {
@@ -157,11 +157,11 @@ run_DESeq <- function(dds, sftype = "poscounts", tidy = TRUE, format = "DataFram
 
 #' FDR and Power for Differential Analysis
 #' @export
-da_metrics <- function(results, nonnull, level = 0.05, focus_col = ncol(results)) {
+da_metrics <- function(results, null, level = 0.05, focus_col = ncol(results)) {
   flagged <- results[results[[focus_col]] < level, ] |>
     rownames()
 
-  null <- setdiff(rownames(results), nonnull)
+  nonnull <- setdiff(rownames(results), null)
   data.frame(
     metric = c("FDR", "power"),
     value = c(length(intersect(null, flagged)) / max(1, length(flagged)), length(intersect(nonnull, flagged)) / length(nonnull))

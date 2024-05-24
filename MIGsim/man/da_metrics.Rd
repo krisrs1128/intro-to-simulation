@@ -4,7 +4,7 @@
 \alias{da_metrics}
 \title{FDR and Power for Differential Analysis}
 \usage{
-da_metrics(results, nonnull, level = 0.05, focus_col = ncol(results))
+da_metrics(results, null, level = 0.05, focus_col = ncol(results))
 }
 \description{
 FDR and Power for Differential Analysis

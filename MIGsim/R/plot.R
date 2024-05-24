@@ -35,7 +35,7 @@ select_features <- function(exper, qmin = 0.9, qmax = 1, summary_fun = median) {
 #' @importFrom ggplot2 ggplot scale_y_continuous
 #' @importFrom tidyr pivot_longer
 #' @importFrom dplyr everything bind_rows
-#' @importFrom 
+#' @importFrom
 #' @export
 correlation_hist <- function(e_true, e_sim) {
   bind_rows(
@@ -44,6 +44,6 @@ correlation_hist <- function(e_true, e_sim) {
   ) |>
     pivot_longer(everything(), names_to = "method") |>
     ggplot() +
-      geom_histogram(aes(value, fill = method), position = "identity", alpha = 0.75) +
-      scale_y_continuous(expand = c(0, 0, .1, 0))
+    geom_histogram(aes(value, fill = method), position = "identity", alpha = 0.75) +
+    scale_y_continuous(expand = c(0, 0, .1, 0))
 }

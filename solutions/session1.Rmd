@@ -23,7 +23,7 @@ library(scDesigner)
 
 ```{r}
 data(atlas)
-dim(atlas) # 125 genera
+dim(atlas) # 24 genera
 table(rowData(atlas)$Phylum)
 mean(colData(atlas)$age)
 
@@ -137,23 +137,21 @@ config <- expand.grid(
   sample_size = floor(seq(50, 1200, length.out = 5)),
   n_rep = 1:10
 ) |>
-  mutate(run = row_number())
+  mutate(run = as.character(row_number()))
 
 results <- list()
 for (i in seq_len(nrow(config))) {
-  atlas_ <- sample_n(sim_, config$sample_size[i])
+  atlas_ <- sample_n(sim, config$sample_size[i])
   results[[i]] <- run_DA_method(atlas_, "LIMMA_voom") |>
-    da_metrics(nonnull, level = 0.3)
+    da_metrics(nulls, level = 0.3)
   print(glue("{i}/{nrow(config)}"))
 }
 ```
 
 ```{r}
-results <- bind_rows(results, .id = "run") |>
+bind_rows(results, .id = "run") |>
   left_join(config) |>
   ggplot() +
-  stat_pointinterval(aes(
-    factor(sample_size), power
-  )) +
-  facet_wrap(~ metric, scales = "free")
+  stat_pointinterval(aes(factor(sample_size), value)) +
+  facet_wrap(~metric, scales = "free")
 ```

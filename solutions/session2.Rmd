@@ -27,7 +27,7 @@ plotLoadings(result$fit)
 
 ```{r}
 data(t1d_order)
-simulator <- setup_simulator(t1d, link_formula = ~outcome2, family = ~GaussianLSS()) |>
+simulator <- setup_simulator(t1d, link_formula = ~outcome2, family = ~ GaussianLSS()) |>
   estimate(mstop = 100)
 
 sim_exper <- sample(simulator)
@@ -44,7 +44,7 @@ correlation_hist(t1d, sim_exper)
 simulator <- setup_simulator(
   t1d,
   link_formula = ~outcome2,
-  family = ~GaussianLSS(),
+  family = ~ GaussianLSS(),
   copula_def = copula_adaptive()
 ) |>
   estimate(mstop = 100)
@@ -60,21 +60,21 @@ correlation_hist(t1d, sim_exper)
 config <- expand.grid(
   sample_size = floor(seq(10, 200, length.out = 5)),
   n_null = floor(seq(317, 417, length.out = 4)),
-  n_rep = 1
+  n_rep = 1:4
 )
 
-metrics <- vector(length = nrow(config))
+config$metrics <- NA
 ```
 
 ```{r power-analysis-loop}
 for (i in seq_len(nrow(config))) {
-  if (i == 1 || config$n_nonnull[i] != config$n_nonnull[i - 1]) {
+  if (i == 1 || config$n_null[i] != config$n_null[i - 1]) {
     simulator <- simulator |>
-      mutate(dplyr::any_of(rev(signal_order)[1:config$n_null]), link = ~1) |>
-      estimate()
+      mutate(dplyr::any_of(rev(t1d_order)[1:config$n_null[i]]), link = ~1) |>
+      estimate(mstop = 100)
   }
 
-  metrics[i] <- sample_n(simulator, config$sample_size[i]) |>
+  config$metrics[i] <- sample_n(simulator, config$sample_size[i]) |>
     splsda_fit() %>%
     .[["auc"]]
   print(glue("run {i}/{nrow(config)}"))
@@ -82,8 +82,7 @@ for (i in seq_len(nrow(config))) {
 ```
 
 ```{r}
-config$metrics <- metrics
-ggplot(config, aes(sample_size, metrics, col = factor(n_nonnull))) +
-  geom_line(aes(group = factor(n_nonnull))) +
+ggplot(config, aes(sample_size, metrics, col = factor(n_null))) +
+  geom_line(aes(group = factor(n_null))) +
   geom_point()
 ```
