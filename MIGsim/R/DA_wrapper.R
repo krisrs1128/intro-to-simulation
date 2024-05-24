@@ -5,7 +5,10 @@
 #' @return The output of the DA method (log fold change across groups, pvalue, adj.pvalue)
 #' @export
 #' @importFrom edgeR DGEList calcNormFactors
-run_DA_method <- function(raw_data, meta_data, DA_method) {
+run_DA_method <- function(exper, DA_method) {
+  raw_data <- assay(exper)
+  meta_data <- colData(exper)
+
   if (DA_method == "ANCOMBC") {
     tseObj <- TreeSummarizedExperiment(SimpleList(counts = raw_data),
       colData = meta_data
@@ -36,7 +39,6 @@ run_DA_method <- function(raw_data, meta_data, DA_method) {
 
   out
 }
-
 
 ####### ANCOM-BC2 method #######
 #'
@@ -161,7 +163,7 @@ da_metrics <- function(results, nonnull, level = 0.05, focus_col = ncol(results)
 
   null <- setdiff(rownames(results), nonnull)
   data.frame(
-    FDR = length(intersect(null, flagged)) / max(1, length(flagged)),
-    power = length(intersect(nonnull, flagged)) / length(nonnull)
+    metric = c("FDR", "power"),
+    value = c(length(intersect(null, flagged)) / max(1, length(flagged)), length(intersect(nonnull, flagged)) / length(nonnull))
   )
 }

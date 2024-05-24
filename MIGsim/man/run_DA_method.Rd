@@ -4,7 +4,7 @@
 \alias{run_DA_method}
 \title{Wrapper function for each DA_method}
 \usage{
-run_DA_method(raw_data, meta_data, DA_method)
+run_DA_method(exper, DA_method)
 }
 \arguments{
 \item{raw_data:}{an otu table with Otus on rows and Samples/Subjects on columns.}
