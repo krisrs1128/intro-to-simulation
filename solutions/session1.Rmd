@@ -6,6 +6,7 @@ output: readthedown::html_document
 
 ```{r}
 library(MIGsim) # devtools::install_github("krisrs1128/intro-to-simulation/MIGsim")
+library(SummarizedExperiment)
 library(gamboostLSS)
 library(ggdist)
 library(glue)
@@ -24,7 +25,6 @@ library(scDesigner)
 data(atlas)
 dim(atlas) # 125 genera
 table(rowData(atlas)$Phylum)
-
 mean(colData(atlas)$age)
 
 # or just,
@@ -39,11 +39,7 @@ exper_lineplot(exper_ts)
 ```
 
 ```{r}
-sim <- setup_simulator(
-  exper_ts,
-  ~ ns(time, df = 7) * group,
-  ~ GaussianLSS()
-) |>
+sim <- setup_simulator(exper_ts, ~ ns(time, df = 7) * group, ~ GaussianLSS()) |>
   estimate(nu = 0.01, mstop = 1000)
 
 sample(sim) |>
@@ -93,30 +89,12 @@ sample(sim) |>
 data(atlas)
 
 fmla <- list(
-  mu = ~bmi_group + log_depth,
-  sigma = ~bmi_group + log_depth,
-  nu = ~ 1
+  mu = ~ bmi_group + log_depth,
+  sigma = ~ bmi_group + log_depth,
+  nu = ~1
 )
-sim <- setup_simulator(
-  atlas,
-  fmla,
-  ~ ZINBLSS()
-) |>
+sim <- setup_simulator(atlas, fmla, ~ ZINBLSS()) |>
   estimate(nu = 0.005, mstop = 1000)
-```
-
-```{r}
-#library(mbImpute)
-#metadata <- colData(atlas) |>
-#  as_tibble() |>
-#  select(age, sex, project)
-#atlas_impute <- mbImpute(condition = atlas$bmi_group, t(assay(atlas)), metadata = metadata)
-# sim <- setup_simulator(
-#   atlas_impute,
-#   ~ bmi_group,
-#   ~ GaussianLSS()
-# ) |>
-#   estimate(nu = 0.005, mstop = 500)
 ```
 
 Visualizing simulator quality.
@@ -141,73 +119,41 @@ ggplot(combined) +
 Re-estimate the model with all taxa initially set to NULL.
 
 ```{r}
-null_fmla <- list(
-  mu = ~log_depth,
-  sigma = ~log_depth,
-  nu = ~1
-)
-
-nonnull_fmla <- list(
-  mu = ~bmi_group + log_depth,
-  sigma = ~bmi_group + log_depth,
-  nu = ~1
-)
-
-sim_ <- setup_simulator(
-  atlas,
-  null_fmla,
-  ~ ZINBLSS()
-) |>
-  estimate(nu = 0.005, mstop = 1000)
+null_fmla <- list(mu = ~log_depth, sigma = ~log_depth, nu = ~1)
 ```
 
 ```{r}
-signal_order <- run_DA_method(assay(atlas), colData(atlas), "LIMMA_voom") |>
-  rownames()
+nulls <- run_DA_method(atlas, "LIMMA_voom") |>
+  rownames() |>
+  tail(16)
 
-configs <- expand.grid(
-  sample_size = floor(seq(50, 1500, length.out = 10)),
-  n_rep = 1:20,
-  n_nonnull = 8
-)
+sim <- sim |>
+  mutate(dplyr::any_of(nulls), link = null_fmla) |>
+  estimate(nu = 0.005, mstop = 500)
+```
+
+```{r}
+config <- expand.grid(
+  sample_size = floor(seq(50, 1200, length.out = 5)),
+  n_rep = 1:10
+) |>
+  mutate(run = row_number())
 
 results <- list()
-for (i in seq_len(nrow(configs))) {
-  # re-estimate the simulator whenever # of true signals changes
-  nonnull <- signal_order[1:configs$n_nonnull[i]]
-  if (i == 1 || configs$n_nonnull[i] != configs$n_nonnull[i - 1]) {
-    sim_ <- sim_ |>
-      mutate(dplyr::any_of(nonnull), link = nonnull_fmla) |>
-      estimate(nu = 0.005, mstop = 500)
-  }
-
-  # generate data and run tests
-  atlas_ <- sample_n(sim_, configs$sample_size[i])
-  colnames(atlas_) <- glue("sample_{1:configs$sample_size[i]}")
-  results[[i]] <- list(
-    "LIMMA_voom" = run_DA_method(assay(atlas_), colData(atlas_), "LIMMA_voom") |>
-      da_metrics(nonnull, level = 0.3),
-    "ANCOMBC" = run_DA_method(assay(atlas_), colData(atlas_), "ANCOMBC") |>
-      da_metrics(nonnull, level = 0.3)
-  )
-
-  print(glue("{i}/{nrow(configs)}"))
+for (i in seq_len(nrow(config))) {
+  atlas_ <- sample_n(sim_, config$sample_size[i])
+  results[[i]] <- run_DA_method(atlas_, "LIMMA_voom") |>
+    da_metrics(nonnull, level = 0.3)
+  print(glue("{i}/{nrow(config)}"))
 }
 ```
 
 ```{r}
-results0 <- results
-results <- map_dfr(results, bind_rows, .id = "method") |>
-  bind_rows() |>
-  bind_cols(configs)
-
-ggplot(results) +
+results <- bind_rows(results, .id = "run") |>
+  left_join(config) |>
+  ggplot() +
   stat_pointinterval(aes(
-    factor(sample_size), power, col = method)
-  )
-
-ggplot(results) +
-  stat_pointinterval(aes(
-    factor(sample_size), FDR, col = factor(n_nonnull)
-  ))
+    factor(sample_size), power
+  )) +
+  facet_wrap(~ metric, scales = "free")
 ```

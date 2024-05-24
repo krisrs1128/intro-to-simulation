@@ -17,68 +17,73 @@ library(scDesigner)
 ### Interpreting PLS-DA
 
 ```{r}
-exper <- readRDS("../data/t1d.rds")
-result <- splsda_fit(exper)
+data(t1d)
+result <- splsda_fit(t1d)
 plotIndiv(result$fit)
 plotLoadings(result$fit)
 ```
 
-### PLS-DA Power Analysis
+### Simualtor Estimation
 
 ```{r}
-signal_order <- readRDS("../data/t1d_order.rds")
-simulator <- setup_simulator(
-  exper,
-  link_formula = ~outcome2,
-  family = ~GaussianLSS()
-) |>
-  estimate()
+data(t1d_order)
+simulator <- setup_simulator(t1d, link_formula = ~outcome2, family = ~GaussianLSS()) |>
+  estimate(mstop = 100)
 
 sim_exper <- sample(simulator)
 sim_exper
 ```
 
+### Simulator Evaluation
+
 ```{r}
-update_simulator <- function(simulator, n_nonnull, signal_order) {
-  exper <- simulator@template
-  nonnull <- rownames(exper)[signal_order[1:n_nonnull]]
-  simulator |>
-    mutate(dplyr::any_of(nonnull), link = ~outcome2) |>
-    estimate()
-}
+correlation_hist(t1d, sim_exper)
 ```
 
+```{r}
+simulator <- setup_simulator(
+  t1d,
+  link_formula = ~outcome2,
+  family = ~GaussianLSS(),
+  copula_def = copula_adaptive()
+) |>
+  estimate(mstop = 100)
+
+sim_exper <- sample(simulator)
+correlation_hist(t1d, sim_exper)
+```
+
+
+### PLS-DA Power Analysis
+
 ```{r, power-analysis-params}
-configs <- expand.grid(
+config <- expand.grid(
   sample_size = floor(seq(10, 200, length.out = 5)),
-  n_nonnull = floor(seq(10, 110, length.out = 4)),
+  n_null = floor(seq(317, 417, length.out = 4)),
   n_rep = 1
 )
 
-metrics <- vector(length = nrow(configs))
+metrics <- vector(length = nrow(config))
 ```
 
 ```{r power-analysis-loop}
 for (i in seq_len(nrow(config))) {
-  simulator <- update_simulator(simulator, n_nonnull = n_nonnull[i], signal_order)
-  metrics[i] <- sample_n(simulator, config$sample_size[j]) |>
+  if (i == 1 || config$n_nonnull[i] != config$n_nonnull[i - 1]) {
+    simulator <- simulator |>
+      mutate(dplyr::any_of(rev(signal_order)[1:config$n_null]), link = ~1) |>
+      estimate()
+  }
+
+  metrics[i] <- sample_n(simulator, config$sample_size[i]) |>
     splsda_fit() %>%
     .[["auc"]]
-  print(glue("run {k}/{nrow(config)}"))
+  print(glue("run {i}/{nrow(config)}"))
 }
 ```
 
 ```{r}
-configs$metrics <- metrics
-
-ggplot(configs) +
-  geom_point(aes(sample_size, metric))
-
-```
-
-```{r}
-ggplot(results) +
+config$metrics <- metrics
+ggplot(config, aes(sample_size, metrics, col = factor(n_nonnull))) +
+  geom_line(aes(group = factor(n_nonnull))) +
   geom_point()
 ```
-
-### Simulator Evaluation
