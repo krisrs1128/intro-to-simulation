@@ -13,7 +13,7 @@ run_DA_method <- function(raw_data, meta_data, DA_method) {
     out <- run_ancombc2(
       tseObj = tseObj,
       assay_name = "counts",
-      fixed_formula = "age + bmi_group",
+      fixed_formula = "bmi_group",
       p_adj_method = "BH"
     )
   } else if (DA_method == "LIMMA_voom") {
@@ -22,7 +22,7 @@ run_DA_method <- function(raw_data, meta_data, DA_method) {
     out <- run_limma(
       dge = dgeObj,
       metaD = meta_data,
-      formula = ~ age + bmi_group,
+      formula = ~ bmi_group,
       p_adj_method = "BH"
     )
   } else if (DA_method == "DESeq2") {
@@ -84,7 +84,7 @@ run_ancombc2 <- function(tseObj, assay_name = "counts", fixed_formula, p_adj_met
 #' @param p_adj_method the multiple correction procedure to be used.
 #' @return a data frame with log fold changes, p_values, q_valuesh.
 #' @importFrom limma voom lmFit eBayes topTable
-#' @importFrom dplyr rownames_to_column
+#' @importFrom tibble rownames_to_column
 #' @export
 run_limma <- function(dge, metaD, formula, p_adj_method = "BH") {
   design <- model.matrix(formula, data = metaD)
@@ -152,3 +152,16 @@ run_DESeq <- function(dds, sftype = "poscounts", tidy = TRUE, format = "DataFram
   return(out_df)
 }
 #######
+
+#' FDR and Power for Differential Analysis
+#' @export
+da_metrics <- function(results, nonnull, level = 0.05, focus_col = ncol(results)) {
+  flagged <- results[results[[focus_col]] < level, ] |>
+    rownames()
+
+  null <- setdiff(rownames(results), nonnull)
+  data.frame(
+    FDR = length(intersect(null, flagged)) / max(1, length(flagged)),
+    power = length(intersect(nonnull, flagged)) / length(nonnull)
+  )
+}

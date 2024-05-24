@@ -7,6 +7,7 @@ output: readthedown::html_document
 ```{r}
 library(MIGsim) # devtools::install_github("krisrs1128/intro-to-simulation/MIGsim")
 library(gamboostLSS)
+library(glue)
 library(splines)
 library(tidyverse)
 library(scDesigner)
@@ -29,34 +30,7 @@ mean(colData(atlas)$age)
 mean(atlas$age)
 ```
 
-### Gaussian Mixture
-
-```{r}
-data(exper_grouped)
-exper_histogram(exper_grouped)
-```
-
-* Explain how the simulation code below works. 
-* Modify it so that it accurate reflects the difference between groups for the first three genes.
-
-```{r}
-sim <- setup_simulator(exper_grouped, ~1, ~ GaussianLSS()) |>
-  estimate()
-
-sample(sim) |>
-  exper_histogram()
-```
-
-```{r}
-sim <- sim |>
-  mutate(1:3, link = ~group) |>
-  estimate()
-
-sample(sim) |>
-  exper_histogram()
-```
-
-### Gaussian over Time
+### Demo: Gaussian over Time
 
 ```{r}
 data(exper_ts)
@@ -85,12 +59,37 @@ sample(sim) |>
 ```
 
 
+### Exercise: Gaussian Mixture
+
+```{r}
+data(exper_grouped)
+exper_histogram(exper_grouped)
+```
+
+* Explain how the simulation code below works. 
+* Modify it so that it accurate reflects the difference between groups for the first three genes.
+
+```{r}
+sim <- setup_simulator(exper_grouped, ~1, ~ GaussianLSS()) |>
+  estimate()
+
+sample(sim) |>
+  exper_histogram()
+```
+
+```{r}
+sim <- sim |>
+  mutate(1:3, link = ~group) |>
+  estimate()
+
+sample(sim) |>
+  exper_histogram()
+```
+
 ### Estimate and Visualize
 
 ```{r}
-library(gamlss)
-features <- select_features(atlas, 0.8, 1, median)
-atlas2 <- atlas[features, ]
+data(atlas)
 
 fmla <- list(
   mu = ~bmi_group + log_depth,
@@ -98,7 +97,7 @@ fmla <- list(
   nu = ~ 1
 )
 sim <- setup_simulator(
-  atlas2,
+  atlas,
   fmla,
   ~ ZINBLSS()
 ) |>
@@ -110,14 +109,12 @@ Visualizing simulator quality.
 ```{r}
 atlas_ <- sample(sim)
 combined <- bind_rows(
-  real = pivot_experiment(atlas2), # real data
+  real = pivot_experiment(atlas), # real data
   simulated = pivot_experiment(atlas_), # simulated
   .id = "source"
 )
 
-combined |>
-  filter(feature %in% select_features(atlas, .9, 1)) |>
-  ggplot() +
+ggplot(combined) +
   geom_boxplot(
     aes(asinh(value), reorder(feature, value, median), fill = bmi_group)
   ) +
@@ -126,29 +123,27 @@ combined |>
 
 ### Apply to Power Analysis
 
-```{r}
-metrics <- function(results, nonnull, level = 0.05, focus_col = ncol(results)) {
-  flagged <- results[results[[focus_col]] < level, ] |>
-    rownames()
-
-  null <- setdiff(rownames(results), nonnull)
-  data.frame(
-    FDR = length(intersect(null, flagged)) / max(1, length(flagged)),
-    power = length(intersect(nonnull, flagged)) / length(nonnull)
-  )
-}
-
-```
-
 Re-estimate the model with all taxa initially set to NULL.
 
 ```{r}
+null_fmla <- list(
+  mu = ~log_depth,
+  sigma = ~log_depth,
+  nu = ~1
+)
+
+nonnull_fmla <- list(
+  mu = ~bmi_group + log_depth,
+  sigma = ~bmi_group + log_depth,
+  nu = ~1
+)
+
 sim_ <- setup_simulator(
   atlas,
-  ~ age + log_depth,
+  null_fmla,
   ~ ZINBLSS()
 ) |>
-  estimate(nu = 0.001, mstop = 100)
+  estimate(nu = 0.005, mstop = 500)
 ```
 
 ```{r}
@@ -156,25 +151,25 @@ signal_order <- run_DA_method(assay(atlas), colData(atlas), "LIMMA_voom") |>
   rownames()
 
 configs <- expand.grid(
-  sample_size = seq(100, 800, length.out = 5),
-  n_nonnull = floor(seq(20, 60, length.out = 2))
+  sample_size = seq(500, 1600, length.out = 5),
+  n_rep = 1:5,
+  n_nonnull = floor(seq(5, 15, length.out = 2))
 )
 
 results <- list()
-
 for (i in seq_len(nrow(configs))) {
   # re-estimate the simulator whenever # of true signals changes
   nonnull <- signal_order[1:configs$n_nonnull[i]]
   if (i == 1 || configs$n_nonnull[i] != configs$n_nonnull[i - 1]) {
     sim_ <- sim_ |>
-      mutate(dplyr::any_of(nonnull), link = ~ bmi_group + age + log_depth) |>
-      estimate(nu = 0.001, mstop = 100)
+      mutate(dplyr::any_of(nonnull), link = nonnull_fmla) |>
+      estimate(nu = 0.005, mstop = 500)
   }
 
   # generate data and run tests
   atlas_ <- sample_n(sim_, configs$sample_size[i])
   results[[i]] <- run_DA_method(assay(atlas_), colData(atlas_), "LIMMA_voom") |>
-    metrics(nonnull)
+    da_metrics(nonnull, level = 0.3)#, focus_col = 4)
   print(glue("{i}/{nrow(configs)}"))
 }
 ```
@@ -184,4 +179,8 @@ results2 <- results |>
   bind_rows() |>
   bind_cols(configs)
 
+ggplot(results2) +
+  geom_point(aes(
+    sample_size, power, col = factor(n_nonnull)
+  ))
 ```
