@@ -88,45 +88,100 @@ sample(sim) |>
 ### Estimate and Visualize
 
 ```{r}
+library(gamlss)
+features <- select_features(atlas, 0.8, 1, median)
+atlas2 <- atlas[features, ]
+
+fmla <- list(
+  mu = ~bmi_group + log_depth,
+  sigma = ~bmi_group + log_depth,
+  nu = ~ 1
+)
 sim <- setup_simulator(
-  atlas,
-  ~ bmi_group + age + log_depth,
+  atlas2,
+  fmla,
   ~ ZINBLSS()
 ) |>
-  estimate(nu = 0.001, mstop = 100)
+  estimate(nu = 0.005, mstop = 500)
 ```
 
 Visualizing simulator quality.
 
 ```{r}
-atlas_ <- sample(atlas)
-
+atlas_ <- sample(sim)
 combined <- bind_rows(
-  real = pivot_experiment(atlas), # real data
+  real = pivot_experiment(atlas2), # real data
   simulated = pivot_experiment(atlas_), # simulated
   .id = "source"
 )
 
 combined |>
-  filter(feature %in% select_features(atlas)) |>
+  filter(feature %in% select_features(atlas, .9, 1)) |>
   ggplot() +
   geom_boxplot(
-    aes(asinh(value), reorder(feature, value, median), fill = source)
-  )
-```
-
-```{r}
-combined |>
-  filter(feature %in% select_features(atlas)) |>
-  ggplot() +
-  geom_point(
-    aes(age, asinh(value), col = source), size = 0.4, alpha = 0.3
+    aes(asinh(value), reorder(feature, value, median), fill = bmi_group)
   ) +
-  facet_wrap(~ reorder(feature, value, median), scales = "free_y")
+  facet_grid(. ~ source)
 ```
 
 ### Apply to Power Analysis
 
 ```{r}
-run_DA_method(assay(atlas_), colData(atlas_), "LIMMA_voom")
+metrics <- function(results, nonnull, level = 0.05, focus_col = ncol(results)) {
+  flagged <- results[results[[focus_col]] < level, ] |>
+    rownames()
+
+  null <- setdiff(rownames(results), nonnull)
+  data.frame(
+    FDR = length(intersect(null, flagged)) / max(1, length(flagged)),
+    power = length(intersect(nonnull, flagged)) / length(nonnull)
+  )
+}
+
+```
+
+Re-estimate the model with all taxa initially set to NULL.
+
+```{r}
+sim_ <- setup_simulator(
+  atlas,
+  ~ age + log_depth,
+  ~ ZINBLSS()
+) |>
+  estimate(nu = 0.001, mstop = 100)
+```
+
+```{r}
+signal_order <- run_DA_method(assay(atlas), colData(atlas), "LIMMA_voom") |>
+  rownames()
+
+configs <- expand.grid(
+  sample_size = seq(100, 800, length.out = 5),
+  n_nonnull = floor(seq(20, 60, length.out = 2))
+)
+
+results <- list()
+
+for (i in seq_len(nrow(configs))) {
+  # re-estimate the simulator whenever # of true signals changes
+  nonnull <- signal_order[1:configs$n_nonnull[i]]
+  if (i == 1 || configs$n_nonnull[i] != configs$n_nonnull[i - 1]) {
+    sim_ <- sim_ |>
+      mutate(dplyr::any_of(nonnull), link = ~ bmi_group + age + log_depth) |>
+      estimate(nu = 0.001, mstop = 100)
+  }
+
+  # generate data and run tests
+  atlas_ <- sample_n(sim_, configs$sample_size[i])
+  results[[i]] <- run_DA_method(assay(atlas_), colData(atlas_), "LIMMA_voom") |>
+    metrics(nonnull)
+  print(glue("{i}/{nrow(configs)}"))
+}
+```
+
+```{r}
+results2 <- results |>
+  bind_rows() |>
+  bind_cols(configs)
+
 ```
