@@ -2,9 +2,9 @@
 
 export(correlation_hist)
 export(da_metrics)
+export(differential_analysis)
 export(exper_histogram)
 export(exper_lineplot)
-export(run_DA_method)
 export(run_limma)
 export(select_features)
 export(splsda_fit)
