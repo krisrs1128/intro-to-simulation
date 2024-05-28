@@ -1,0 +1,18 @@
+---
+title: "Integrative Simulation Exercises"
+author: Kris Sankaran
+output: rmdformats::readthedown
+---
+
+```{r}
+suppressPackageStartupMessages({
+  library(MIGsim)
+  library(SummarizedExperiment)
+  library(gamboostLSS)
+  library(glue)
+  library(mixOmics)
+  library(ggplot2)
+  library(scDesigner)
+})
+set.seed(20240611)
+```
