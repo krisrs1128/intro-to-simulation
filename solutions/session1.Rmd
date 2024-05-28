@@ -4,6 +4,22 @@ author: Kris Sankaran
 output: rmdformats::readthedown
 ---
 
+```{r, include = FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+```
+
+**Installation**
+
+If you haven't already installed the packages for this workshop, please run the commands below. 
+
+```{r, eval = FALSE}
+devtools::install_github("krisrs1128/intro-to-simulation/MIGsim")
+devtools::install_github("krisrs1128/scDesigner", auth_token = "paste_token_here")
+```
+
+
+# Introduction
+
 Before we consider simulating entire microbial communities, with their complex
 correlation structures, let's learn simulators for individual taxa. This will
 serve as a step towards joint simulators, and it is also enough to let us
@@ -11,10 +27,6 @@ analyze taxon-level differential abundance approaches. For example, at the end
 of this session, we'll apply a simulator to study the power and false discovery
 rate of limma-voom when applied to microbiome data (as opposed to the bulk
 RNA-seq data for which it was originally proposed).
-
-```{r, include = FALSE}
-knitr::opts_chunk$set(message = FALSE, warning = FALSE)
-```
 
 Before we begin, we'll load the necessary packages. Instructions for
 `scDesigner` and `MIGsim` can be found in the pre-workshop announcement.
@@ -45,18 +57,21 @@ example, they distinguish between molecule counts, which are stored in the
 subsetting samples from one of these tables automatically subsets the other.
 
 The line below loads a very small subset of genera from the Atlas 1001
-experiment. This experiment (tk fill in a bit about what it was about).
+experiment. This experiment (tk fill in a bit about what it was about, Lahti2014).
 
 ```{r}
 data(atlas)
 ```
 
-To check your understanding of `SummarizedExperiment` objects, try answering:
+To get some experience working with `SummarizedExperiment` objects, try
+answering:
 
 * How many genera are available in this experiment object?
 * What was the most common phylum in this dataset?
 * What was the average participant age?
 * What was the average abundance of `Allistipes et rel.` among people in the `obese` BMI group?
+
+_Hint: The most important functions are `assay()`, `rowData()`, and `colData()`._
 
 Solution:
 

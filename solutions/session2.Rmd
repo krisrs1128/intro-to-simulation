@@ -48,22 +48,23 @@ below directly gives us this output without our having to explicitly set
 hyerparameters, though you can [look here](https://github.com/krisrs1128/intro-to-simulation/blob/main/MIGsim/R/methods.R) 
 to see how the function was defined.
 
-Exercise: Discuss the output of `plotIndiv`. How does `plotLoadings` shape your interpretation?
+**Exercise**: Discuss the output of `plotIndiv`. How does `plotVar` shape
+your interpretation?
 
 ```{r}
 result <- splsda_fit(t1d)
 plotIndiv(result$fit)
-plotLoadings(result$fit)
+plotVar(result$fit)
 ```
 
 # Estimation
 
-Exercise: Let's estimate a simulator where every protein is allowed ot vary
-across T1D type. Since the data have already been centered log-ratio
-transformed, it's okay to treat these as Gaussian. 
+Let's estimate a simulator where every protein is allowed ot vary across T1D
+type. Since the data have already been centered log-ratio transformed, it's okay
+to treat these as Gaussian. 
 
 ```{r}
-simulator <- setup_simulator(t1d, link_formula = ~outcome2, family = ~ GaussianLSS()) |>
+simulator <- setup_simulator(t1d, link_formula = ~outcome2, family = ~GaussianLSS()) |>
   estimate(mstop = 100)
 ```
 
@@ -94,7 +95,7 @@ correlations down to zero, though we seem to have somewhat overcorrected.
 simulator <- setup_simulator(
   t1d,
   link_formula = ~outcome2,
-  family = ~ GaussianLSS(),
+  family = ~GaussianLSS(),
   copula_def = copula_adaptive()
 ) |>
   estimate(mstop = 100)
@@ -149,12 +150,15 @@ for (i in seq_len(nrow(config))) {
 }
 ```
 
-Finally, we can visualize variation in performance. How do you think the changes
-in performance might influence the discoveries that are possible with the
-resulting models? How might they justify some investments over others?
+We can visualize variation in performance. 
 
 ```{r}
 ggplot(config, aes(sample_size, metrics, col = factor(n_null))) +
   geom_point() +
   facet_wrap(~ n_null)
 ```
+
+
+**Discussion**: Interpret the visualization above. How do you think analysis
+like this could help you justify making some experimental investments over
+others?
