@@ -35,7 +35,6 @@ select_features <- function(exper, qmin = 0.9, qmax = 1, summary_fun = median) {
 #' @importFrom ggplot2 ggplot scale_y_continuous
 #' @importFrom tidyr pivot_longer
 #' @importFrom dplyr everything bind_rows
-#' @importFrom
 #' @export
 correlation_hist <- function(e_true, e_sim) {
   bind_rows(
