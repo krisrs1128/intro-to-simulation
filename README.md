@@ -8,7 +8,7 @@ designed and applied to subtle questions in high-throughput biology.
 
 * Slides: Session [1](https://go.wisc.edu/gfj36r), [2](https://go.wisc.edu/rc776i), [3]
 * Recordings: 
-* Compiled Solutions: [1](https://connect.doit.wisc.edu/content/40e0e34c-c63f-444b-b5bf-9c696aa4fcf9, [2](), [3](https://connect.doit.wisc.edu/content/a8967d1a-2b04-4a23-b040-1f78e375d13d)
+* Compiled Solutions: [1](https://connect.doit.wisc.edu/content/40e0e34c-c63f-444b-b5bf-9c696aa4fcf9), [2](https://connect.doit.wisc.edu/content/a8967d1a-2b04-4a23-b040-1f78e375d13d), [3]()
 
 All data used in these notebooks is contained in the `MIGsim` package. For
 example, to load the `atlas` dataset, you can run:
