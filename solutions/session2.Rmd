@@ -86,17 +86,16 @@ sim_exper <- sample(simulator)
 correlation_hist(t1d, sim_exper)
 ```
 
-To address this, let's modify the `copula_def` argument of `setup_simulator` so
-that it uses a covariance estimator that's well-suited to high-dimensional
-settings. This has the desired effect of shrinking more of the estimated
-correlations down to zero, though we seem to have somewhat overcorrected.
+**Exercise**: To address this, let's try modifying the `copula_def` argument of
+`setup_simulator` to use a more suitable simulator. Generate new correlation
+histograms and comment on the changes you observe.
 
-```{r}
+```{r, eval = FALSE}
 simulator <- setup_simulator(
   t1d,
   link_formula = ~outcome2,
   family = ~GaussianLSS(),
-  copula_def = copula_adaptive()
+  copula_def = # fill this code in
 ) |>
   estimate(mstop = 100)
 
