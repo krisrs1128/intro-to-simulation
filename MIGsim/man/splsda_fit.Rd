@@ -13,6 +13,19 @@ splsda_fit(
   folds = 5
 )
 }
+\arguments{
+\item{exper}{The SummarizedExperiment on which to run spls-da.}
+
+\item{outcome_var}{The response variable from exper's colData slot.}
+
+\item{ncomp}{The number of components to use in the SPLS-DA.}
+
+\item{keepX}{The number of variables to include in each component.}
+
+\item{folds}{The number of folds used for evaluating performance with CV.}
+
+\item{repeat}{The number of repeats used for evaluating performance with CV.}
+}
 \value{
 A list with both the CV-averaged AUC and the fitted SPLS-DA object.
 }
