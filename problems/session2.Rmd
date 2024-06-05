@@ -1,5 +1,5 @@
 ---
-title: "Joint Simulation Exercises"
+title: "Multivariate Simulation Exercises"
 author: Kris Sankaran
 output: rmdformats::readthedown
 ---
@@ -134,15 +134,9 @@ PLS-DA performance. Fill in the block below to:
 
 ```{r power-analysis-loop}
 for (i in seq_len(nrow(config))) {
-  if (i == 1 || config$n_null[i] != config$n_null[i - 1]) {
-    simulator <- simulator |>
-      mutate(dplyr::any_of(rev(t1d_order)[1:config$n_null[i]]), link = ~1) |>
-      estimate(mstop = 100)
-  }
-
-  config$metrics[i] <- (sample_n(simulator, config$sample_size[i]) |>
-    splsda_fit())[["auc"]]
-  print(glue("run {i}/{nrow(config)}"))
+  # Update the existing simulator to reflect the new configuration
+  # gather AUC using the splsda_fit() function provided above
+  #print(glue("run {i}/{nrow(config)}"))
 }
 ```
 
