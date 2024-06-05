@@ -1,4 +1,6 @@
-# MIG Workshop: Introduction to Simulation for Genomics
+
+
+<h1> <img src="https://krisrs1128.github.io/talks/2024/20240618/figure/clustering_pushforward.png" width=90/> MIG Workshop: Introduction to Simulation for Genomics</h1>
 
 Welcome!! This repository collects materials for the simulation short course
 taught through Melbourne Integrative Genomics in June 2024. Here, you can learn
