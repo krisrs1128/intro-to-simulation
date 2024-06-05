@@ -11,7 +11,7 @@ to subtle questions in high-throughput biology.
 All data used in these notebooks is contained in the `MIGsim` package. For
 example, to load the `atlas` dataset, you can run:
 
-```
+```{r}
 library(MIGsim)
 data(atlas)
 ```
@@ -45,14 +45,14 @@ shared in the pre-workshop announcement.
 install_github("krisrs1128/scDesigner", auth_token = "paste_token_here")
 ```
 
-Finally, confirm that you can load the packages without any issues.
+Finally, confirm that you can load the packages without any errors.
 
 ```{r}
 library(MIGsim)
 library(scDesigner)
 ```
 
-If you have any questions at all, please raise an
+If you have any difficulties at all, please raise an
 [issue](https://github.com/krisrs1128/intro-to-simulation/issues) or send an
 [email](mailto:ksankaran@wisc.edu). We appreciate your patience -- this package
 is still quite experimental, and your comments help make it better.
