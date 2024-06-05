@@ -137,10 +137,51 @@ plotIndiv(fit)
 
 ```{r}
 load(url("https://github.com/EvaYiwenWang/Managing_batch_effects/raw/master/Managing_batch_effects/datasets/microbiome_datasets.RData"))
-hd <- SummarizedExperiment(
-  DataFrame(bach = hd.batch, treatment = hd.trt),
-  assays = SimpleList(counts = hd.count)
+ad.index.keep <- which(colSums(ad.count)*100/(sum(colSums(ad.count))) > 0.01)
+ad.count.keep <- ad.count[, ad.index.keep]
+ad.count.keep <- ad.count.keep + 1
+ad.clr <- logratio.transfo(ad.count.keep, logratio = 'CLR')
+class(ad.clr) <- 'matrix' 
+
+alzheimers <- SummarizedExperiment(
+  colData = DataFrame(batch = ad.batch, treatment = ad.trt),
+  assays = SimpleList(clr = t(ad.clr))
 )
 
+library(compositions)
+
+simulator <- setup_simulator(
+  alzheimers,
+  ~ batch + treatment,
+  ~ GaussianLSS(),
+  copula = copula_adaptive(thr = .1)
+) |>
+  estimate(nu = 0.05, mstop = 100)
+
+alzheimers_sim <- sample(simulator)
+
+library(dplyr)
+merged_data <- bind_rows(
+    template = pivot_experiment(alzheimers),
+    simulated = pivot_experiment(alzheimers_sim),
+    .id = "source"
+) |>
+filter(feature %in% rownames(alzheimers)[1:30])
+
+ggplot(merged_data) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(aes(value, reorder(feature, value), fill = source)) +
+  facet_grid(. ~ reorder(treatment, -value))
 ```
 
+```{r}
+pca_res <- pca(t(assay(alzheimers_sim)))
+pca_res <- pca(t(assay(alzheimers)))
+
+bind_cols(pca_res$variates$X, as_tibble(colData(alzheimers))) |>
+  ggplot() +
+  geom_hline(yintercept = 0, linewidth = 0.8) +
+  geom_vline(xintercept = 0, linewidth = 0.8) +
+  geom_point(aes(PC1, PC2, col = treatment), size = 2) +
+  facet_wrap(~ batch)
+```
