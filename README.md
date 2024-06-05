@@ -21,7 +21,13 @@ Source code for the exercise sheets are in their respective directories.
 
 ### Setup
 
-First, please install the package for this workshop.
+First, please make sure you have a recent version of R (>= 4.0) available to
+use. You can find more materials on setting up and learning R at this previous
+workshop's
+[homepage](https://melbintgen.github.io/intro-to-r/intro_r_biologists.html).
+
+We've defined a small package called `MIGsim` containing all the data and helper
+functions used in this workshop. You can install it with:
 
 ```{r}
 library(devtools)
