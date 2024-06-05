@@ -17,6 +17,8 @@ suppressPackageStartupMessages({
 set.seed(20240611)
 ```
 
+### Vertical Integration
+
 ```{r}
 data(icu)
 simulator <- list()
@@ -24,6 +26,8 @@ for (i in seq_along(icu)) {
   simulator[[i]] <- setup_simulator(icu[[i]], ~ Category, ~ GaussianLSS()) |>
     estimate(nu = 0.05)
 }
+
+names(simulator) <- names(icu)
 ```
 
 evaluate similarity between real and simulated.
@@ -96,3 +100,47 @@ bind_rows(cancors, .id = "rep") |>
   ggplot() +
     geom_boxplot(aes(factor(loading), value, fill = source, col = source), alpha = 0.6)
 ```
+
+Next, an example where we either do or do not have any true association with
+category, to see how the integration outputs change.
+
+```{r}
+x <- map(icu, ~ t(assay(.)))
+y <- colData(icu[[1]])$Category
+fit <- block.splsda(x, y)
+plotIndiv(fit)
+```
+
+```{r}
+null_simulator <- simulator
+null_simulator[[1]] <- simulator[[1]] |>
+  scDesigner::mutate(1:180, link = ~ 1, family = ~ GaussianLSS()) |>
+  estimate(nu = 0.05)
+
+null_simulator[[2]] <- simulator[[2]] |>
+  scDesigner::mutate(1:18, link = ~ 1, family = ~ GaussianLSS()) |>
+  estimate(nu = 0.05)
+```
+
+```{r}
+x <- map(null_simulator, ~ t(assay(sample(.))))
+rownames(x[[1]]) <- colnames(icu[[1]])
+rownames(x[[2]]) <- colnames(icu[[2]])
+rownames(x[[3]]) <- colnames(icu[[3]])
+
+y <- colData(icu[[1]])$Category
+fit <- block.splsda(x, y)
+plotIndiv(fit)
+```
+
+### Horizontal Integration
+
+```{r}
+load(url("https://github.com/EvaYiwenWang/Managing_batch_effects/raw/master/Managing_batch_effects/datasets/microbiome_datasets.RData"))
+hd <- SummarizedExperiment(
+  DataFrame(bach = hd.batch, treatment = hd.trt),
+  assays = SimpleList(counts = hd.count)
+)
+
+```
+
