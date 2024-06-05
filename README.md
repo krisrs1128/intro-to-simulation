@@ -19,13 +19,17 @@ data(atlas)
 
 Source code for the exercise sheets are in their respective directories.
 
-### Installation
+### Setup
 
 First, please install the package for this workshop.
 
 ```{r}
-devtools::install_github("krisrs1128/intro-to-simulation/MIGsim")
+library(devtools)
+install_github("krisrs1128/intro-to-simulation/MIGsim")
 ```
+
+This line assumes that you already have the `devtools` package installed. If
+not, please run `install.packages('devtools')` first.
 
 The simulation package we'll be exploring is currently under development, so
 isn't listed publicly. For today's experiments, we can install the private
@@ -33,9 +37,17 @@ version at this link -- remember to replace the `auth_token` field with the code
 shared in the pre-workshop announcement.
 
 ```{r}
-devtools::install_github("krisrs1128/scDesigner", auth_token = "paste_token_here")
+install_github("krisrs1128/scDesigner", auth_token = "paste_token_here")
 ```
 
-### Contact
+Finally, that you can load the packages without any issues.
 
-Please raise an [issue](https://github.com/krisrs1128/intro-to-simulation/issues) or send an [email](mailto:ksankaran@wisc.edu) if you have any questions!
+```{r}
+library(MIGsim)
+library(scDesigner)
+```
+
+If you have any questions at all, please raise an
+[issue](https://github.com/krisrs1128/intro-to-simulation/issues) or send an
+[email](mailto:ksankaran@wisc.edu). We appreciate your patience with the setup.
+This package is still quite experimental, and your comments help make it better.
