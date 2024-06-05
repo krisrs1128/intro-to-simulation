@@ -1,11 +1,6 @@
+# MIG Workshop: Introduction to Simulation for Genomics
 
-
-<h1> <img src="https://krisrs1128.github.io/talks/2024/20240618/figure/clustering_pushforward.png" width=50/> MIG Workshop: Introduction to Simulation for Genomics</h1>
-
-Welcome!! This repository collects materials for the simulation short course
-taught through Melbourne Integrative Genomics in June 2024. Here, you can learn
-about how controllable, template-driven simulations can be designed and applied
-to subtle questions in high-throughput biology.
+<img  align="right" src="https://krisrs1128.github.io/talks/2024/20240618/figure/gene-gene_dependence.png" width=400/> Welcome!! This repository collects materials for the simulation short course taught through Melbourne Integrative Genomics in June 2024. Here, you can learn about how controllable, template-driven simulations can be designed and applied to subtle questions in high-throughput biology.
 
 * Slides: Session [1](https://go.wisc.edu/gfj36r), [2](https://go.wisc.edu/rc776i), [3](https://github.com/krisrs1128/intro-to-simulation/)
 * Exercise Sheets: [1](https://connect.doit.wisc.edu/content/40e0e34c-c63f-444b-b5bf-9c696aa4fcf9), [2](https://connect.doit.wisc.edu/content/a8967d1a-2b04-4a23-b040-1f78e375d13d), [3](https://github.com/krisrs1128/intro-to-simulation/)
