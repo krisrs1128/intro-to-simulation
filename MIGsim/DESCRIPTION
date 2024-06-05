@@ -22,3 +22,7 @@ Imports:
     mixOmics, 
     splines
 LazyData: true
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

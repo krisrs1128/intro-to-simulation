@@ -1,0 +1,54 @@
+---
+title: "Processing for Integration"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Processing for Integration}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, eval = FALSE}
+library(data.table)
+library(dplyr)
+library(purrr)
+library(tibble)
+library(tidyr)
+
+dt <- fread("ftp://ftp.ebi.ac.uk/pub/databases/mofa/microbiome/data.txt.gz")
+metadata <- fread("ftp://ftp.ebi.ac.uk/pub/databases/mofa/microbiome/metadata.txt.gz")
+
+antibiotics <- c(
+  "Penicillins", "Cephalosporins", "Carbapenems", "Macrolides", "Aminoglycosides", 
+  "Quinolones", "Co_trimoxazole", "Metronidazole", "Vancomycin"
+)
+metabolites <- c("Butyrate", "Acetate", "Propionate")
+
+expers <- dt %>%
+  split(.$view) |>
+  map(~ pivot_wider(., names_from = "sample")) |>
+  map(~ column_to_rownames(., "feature")) |>
+  map(~ select(., -view)) |>
+  map(~ SummarizedExperiment(.))
+
+shared_names <- map(expers, colnames) |>
+  reduce(intersect)
+
+expers <- map(expers, ~ .[, shared_names])
+metadata <- column_to_rownames(metadata, "sample")
+metadata <- metadata[shared_names, ]
+
+for (i in seq_along(expers)) {
+  colData(expers[[i]]) <- DataFrame(metadata)
+}
+
+icu <- expers
+save(icu, file = "~/Downloads/icu.rda")
+use_data(icu)
+```
