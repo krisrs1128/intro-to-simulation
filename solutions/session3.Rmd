@@ -16,3 +16,83 @@ suppressPackageStartupMessages({
 })
 set.seed(20240611)
 ```
+
+```{r}
+data(icu)
+simulator <- list()
+for (i in seq_along(icu)) {
+  simulator[[i]] <- setup_simulator(icu[[i]], ~ Category, ~ GaussianLSS()) |>
+    estimate(nu = 0.05)
+}
+```
+
+evaluate similarity between real and simulated.
+
+```{r}
+library(purrr)
+library(dplyr)
+icu_sim <- map(simulator, sample)
+
+i <- 3
+ix <- order(rowSums(assay(icu[[i]])), decreasing = TRUE)
+abundant <- rownames(icu[[i]])[ix]
+
+merged_data <- bind_rows(
+    template = pivot_experiment(icu[[i]]),
+    simulated = pivot_experiment(icu_sim[[i]]),
+    .id = "source"
+) |>
+filter(feature %in% head(abundant, 20))
+
+ggplot(merged_data) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(aes(value, reorder(feature, value), fill = source)) +
+  facet_grid(. ~ reorder(Category, -value))
+```
+
+Experiment with CCA Nulls
+
+```{r}
+merged <- join_copula(simulator[c(1, 3)], copula_adaptive(thr = 0.01))
+heatmap(copula_parameters(merged))
+```
+
+```{r}
+xy <- sample(merged) |>
+  assay() |>
+  t()
+ix <- map(icu, rownames)
+cca_result <- mixOmics::rcc(xy[, ix[[1]]], xy[, ix[[3]]], method = "shrinkage")
+```
+
+```{r}
+rho_null <- copula_parameters(merged)
+dimnames(rho_null) <- list(colnames(xy), colnames(xy))
+rho_null[ix[[1]], ix[[3]]] <- 0
+rho_null[ix[[3]], ix[[1]]] <- 0
+
+B <- 100
+cancors <- list()
+for (b in seq_len(B)) {
+  xy_null <- merged |>
+    mutate_correlation(rho_null) |>
+    sample() |>
+    assay() |>
+    t()
+
+  cancors[[glue("sim_{b}")]] <- mixOmics::rcc(xy_null[, ix[[1]]], xy_null[, ix[[3]]], method = "shrinkage")$cor
+}
+```
+
+```{r}
+cancors[["true"]] <- cca_result$cor
+
+bind_rows(cancors, .id = "rep") |>
+  tidyr::pivot_longer(-rep, names_to = "loading") |>
+  mutate(
+    source = stringr::str_detect(rep, "true"),
+    loading = as.integer(loading)
+  ) |>
+  ggplot() +
+    geom_boxplot(aes(factor(loading), value, fill = source, col = source), alpha = 0.6)
+```
