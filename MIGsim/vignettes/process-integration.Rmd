@@ -14,6 +14,8 @@ knitr::opts_chunk$set(
 )
 ```
 
+This is the preprocessing for the MOFA data analysis discussed in Ricard Argaguelet and Bas Haak's [microbiome example](https://raw.githack.com/bioFAM/MOFA2_tutorials/master/R_tutorials/microbiome_vignette.html#train-mofa-model).
+
 ```{r setup, eval = FALSE}
 library(data.table)
 library(dplyr)
@@ -52,6 +54,10 @@ icu <- expers
 use_data(icu)
 ```
 
+This is the CLR processing for the Alzheimer's example in session 3, following
+Eva Wang's excellent review of [batch effect correction in microbiome data](https://evayiwenwang.github.io/Managing_batch_effects/)
+
+
 ```{r, eval = FALSE}
 load(url("https://github.com/EvaYiwenWang/Managing_batch_effects/raw/master/Managing_batch_effects/datasets/microbiome_datasets.RData"))
 ad.index.keep <- which(colSums(ad.count)*100/(sum(colSums(ad.count))) > 0.01)
@@ -67,8 +73,9 @@ alzheimers <- SummarizedExperiment(
 usethis::use_data(alzheimers, overwrite = TRUE)
 ```
 
+This is the definition of the `imaginary_design` dataset used in Session 3.
 
-```{r}
+```{r, eval = FALSE}
 new_effect <- 1.8
 imaginary_design <- expand.grid(
   extraction = 1:3,

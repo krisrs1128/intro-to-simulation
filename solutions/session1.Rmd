@@ -17,7 +17,6 @@ devtools::install_github("krisrs1128/intro-to-simulation/MIGsim")
 devtools::install_github("krisrs1128/scDesigner", auth_token = "paste_token_here")
 ```
 
-
 # Introduction
 
 Before we consider simulating entire microbial communities, with their complex
@@ -41,8 +40,8 @@ suppressPackageStartupMessages({
   library(ggdist)
   library(ggplot2)
   library(glue)
-  library(scDesigner)
   library(splines)
+  library(scDesigner)
 })
 set.seed(202406)
 theme_set(theme_classic())
