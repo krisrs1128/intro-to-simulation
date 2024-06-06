@@ -9,135 +9,23 @@ suppressPackageStartupMessages({
   library(MIGsim)
   library(SummarizedExperiment)
   library(gamboostLSS)
+  library(ggplot2)
   library(glue)
   library(mixOmics)
-  library(ggplot2)
+  library(purrr)
   library(scDesigner)
 })
-set.seed(20240611)
-```
-
-### Vertical Integration
-
-```{r}
-data(icu)
-simulator <- list()
-for (i in seq_along(icu)) {
-  simulator[[i]] <- setup_simulator(icu[[i]], ~ Category, ~ GaussianLSS()) |>
-    estimate(nu = 0.05)
-}
-
-names(simulator) <- names(icu)
-```
-
-evaluate similarity between real and simulated.
-
-```{r}
-library(purrr)
-library(dplyr)
-icu_sim <- map(simulator, sample)
-
-i <- 3
-ix <- order(rowSums(assay(icu[[i]])), decreasing = TRUE)
-abundant <- rownames(icu[[i]])[ix]
-
-merged_data <- bind_rows(
-    template = pivot_experiment(icu[[i]]),
-    simulated = pivot_experiment(icu_sim[[i]]),
-    .id = "source"
-) |>
-filter(feature %in% head(abundant, 20))
-
-ggplot(merged_data) +
-  geom_vline(xintercept = 0) +
-  geom_boxplot(aes(value, reorder(feature, value), fill = source)) +
-  facet_grid(. ~ reorder(Category, -value))
-```
-
-Experiment with CCA Nulls
-
-```{r}
-merged <- join_copula(simulator[c(1, 3)], copula_adaptive(thr = 0.01))
-heatmap(copula_parameters(merged))
-```
-
-```{r}
-xy <- sample(merged) |>
-  assay() |>
-  t()
-ix <- map(icu, rownames)
-cca_result <- mixOmics::rcc(xy[, ix[[1]]], xy[, ix[[3]]], method = "shrinkage")
-```
-
-```{r}
-rho_null <- copula_parameters(merged)
-dimnames(rho_null) <- list(colnames(xy), colnames(xy))
-rho_null[ix[[1]], ix[[3]]] <- 0
-rho_null[ix[[3]], ix[[1]]] <- 0
-
-B <- 100
-cancors <- list()
-for (b in seq_len(B)) {
-  xy_null <- merged |>
-    mutate_correlation(rho_null) |>
-    sample() |>
-    assay() |>
-    t()
-
-  cancors[[glue("sim_{b}")]] <- mixOmics::rcc(xy_null[, ix[[1]]], xy_null[, ix[[3]]], method = "shrinkage")$cor
-}
-```
-
-```{r}
-cancors[["true"]] <- cca_result$cor
-
-bind_rows(cancors, .id = "rep") |>
-  tidyr::pivot_longer(-rep, names_to = "loading") |>
-  mutate(
-    source = stringr::str_detect(rep, "true"),
-    loading = as.integer(loading)
-  ) |>
-  ggplot() +
-    geom_boxplot(aes(factor(loading), value, fill = source, col = source), alpha = 0.6)
-```
-
-Next, an example where we either do or do not have any true association with
-category, to see how the integration outputs change.
-
-```{r}
-x <- map(icu, ~ t(assay(.)))
-y <- colData(icu[[1]])$Category
-fit <- block.splsda(x, y)
-plotIndiv(fit)
-```
-
-```{r}
-null_simulator <- simulator
-null_simulator[[1]] <- simulator[[1]] |>
-  scDesigner::mutate(1:180, link = ~ 1, family = ~ GaussianLSS()) |>
-  estimate(nu = 0.05)
-
-null_simulator[[2]] <- simulator[[2]] |>
-  scDesigner::mutate(1:18, link = ~ 1, family = ~ GaussianLSS()) |>
-  estimate(nu = 0.05)
-```
-
-```{r}
-x <- map(null_simulator, ~ t(assay(sample(.))))
-rownames(x[[1]]) <- colnames(icu[[1]])
-rownames(x[[2]]) <- colnames(icu[[2]])
-rownames(x[[3]]) <- colnames(icu[[3]])
-
-y <- colData(icu[[1]])$Category
-fit <- block.splsda(x, y)
-plotIndiv(fit)
+set.seed(20240603)
 ```
 
 ### Horizontal Integration
 
 ```{r}
-set.seed(20240603)
 data(alzheimers)
+pca_batch(alzheimers)
+```
+
+```{r}
 simulator <- setup_simulator(
   alzheimers,
   ~ batch + treatment,
@@ -147,96 +35,71 @@ simulator <- setup_simulator(
   estimate(nu = 0.05, mstop = 100)
 
 alzheimers_sim <- sample(simulator)
+contrast_histogram(alzheimers, alzheimers_sim)
+```
 
-library(dplyr)
-merged_data <- bind_rows(
-    template = pivot_experiment(alzheimers),
-    simulated = pivot_experiment(alzheimers_sim),
-    .id = "source"
-) |>
-filter(feature %in% rownames(alzheimers)[1:30])
-
-ggplot(merged_data) +
-  geom_vline(xintercept = 0) +
-  geom_boxplot(aes(value, reorder(feature, value), fill = source)) +
-  facet_grid(. ~ reorder(treatment, -value))
+```{r}
+pca_batch(alzheimers_sim)
 ```
 
 Question is whether it might overcorrect the new treatment group.
 
 ```{r}
-new_effect <- 1.8
-new_data <- expand.grid(
-  extraction = 1:3,
-  batch = unique(alzheimers$batch),
-  treatment = c(0, 1, new_effect),
-  rep = 1:5
-) |>
-  filter(!(as.integer(rep) > 2 & treatment == new_effect)) |>
-  mutate(sample = factor(ceiling(row_number() / 2)))
-
-alzheimers_sim <- sample(simulator, new_data = new_data)
+data(imaginary_design)
+alzheimers_sim <- sample(simulator, new_data = imaginary_design)
 ```
-
 
 Now we can test batch effect correction in this new setting.
 
 ```{r}
-library(ruv)
+pca_batch(batch_correct(alzheimers_sim, "ruv"))
+pca_batch(batch_correct(alzheimers_sim, "combat"))
+```
 
-batch_correct <- function(exper, method = "ruv") {
-  if (method == "ruv") {
-    x <- ruv_correct(exper)
-  } else if (method == "combat") {
-    x <- combat_correct(exper)
-  }
-  assay(exper) <- t(x)
-  exper
-}
+## Interlude: Using map
 
-pca_plot <- function(exper, facet = TRUE) {
-  pca_res <- pca(t(assay(exper)))
-  p <- bind_cols(pca_res$variates$X, as_tibble(colData(exper))) |>
-    ggplot(aes(PC1, PC2, col = factor(treatment))) +
-    geom_hline(yintercept = 0, linewidth = 0.8) +
-    geom_vline(xintercept = 0, linewidth = 0.8)
-
-  if (facet) {
-    p <- p + 
-      facet_wrap(~ batch) +
-      geom_point(size = 2)
-  } else {
-    p <- p + geom_point(aes(shape = batch), size = 2)
-  }
-  p
-}
-
-ruv_correct <- function(exper, alpha = 0.05, k = 4) {
-  trt_p <- apply(assay(exper), 1, FUN = function(x){
-    res.lm <- lm(x ~ treatment + batch, data = colData(exper))
-    summary(res.lm)$coefficients[2, 4]
-  }) |>
-    p.adjust(method = "fdr")
-
-  ruvIII <- RUVIII(t(assay(exper)), colData(exper)$sample, trt_p > 0.05, k = k)
-  rownames(ruvIII) <- colnames(exper)
-  ruvIII
-}
-
-combat_correct <- function(exper) {
-  t(ComBat(
-    assay(exper), 
-    batch = exper$batch,
-    par.prior = F, prior.plots = F)
-  )
-}
+```{r}
+map(1:3, ~ . ^ 2)
+map(list(a = 1, b = 2, c = 3), ~ . + 1)
 ```
 
 
+## Vertical Integration - Influence of Nulls
+
 ```{r}
-library(sva)
-pca_plot(alzheimers)
-pca_plot(alzheimers_sim)
-pca_plot(batch_correct(alzheimers_sim, "ruv"))
-pca_plot(batch_correct(alzheimers_sim, "combat"))
+data(icu)
+simulator <- map(
+  icu,
+  ~ setup_simulator(., ~ Category, ~ GaussianLSS()) |>
+    estimate(nu = 0.05)
+)
+x <- sample(simulator[[1]])
+```
+
+An example where we either do or do not have any true association with category,
+to see how the integration outputs change.
+
+```{r}
+fit <- exper_splsda(icu)
+plotIndiv(fit)
+```
+
+Question: Do you think weak disease associations in one assay influence the
+dimensionality reduction outputs in another? If so, how?
+
+```{r}
+null_simulator <- simulator
+null_simulator[[1]] <- simulator[[1]] |>
+  scDesigner::mutate(1:180, link = ~ 1, family = ~ GaussianLSS()) |>
+  estimate(nu = 0.05)
+
+# null_simulator[[2]] <- simulator[[2]] |>
+#   scDesigner::mutate(1:18, link = ~ 1, family = ~ GaussianLSS()) |>
+#   estimate(nu = 0.05)
+```
+
+```{r}
+icu_sim <- map(null_simulator, sample)
+fit <- exper_splsda(icu_sim)
+plotIndiv(fit)
 ```
