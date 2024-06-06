@@ -16,13 +16,20 @@ biocViews: Statistics
 Imports:
     SummarizedExperiment,
     TreeSummarizedExperiment,
+    dplyr,
     edgeR, 
+    ggdist,
     ggplot2,
+    glue,
+    insight,
     limma, 
     mixOmics, 
+    purrr,
     splines
 LazyData: true
 Suggests: 
     knitr,
+    sva,
+    ruv,
     rmarkdown
 VignetteBuilder: knitr

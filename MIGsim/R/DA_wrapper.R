@@ -86,17 +86,16 @@ run_ancombc2 <- function(tseObj, assay_name = "counts", fixed_formula, p_adj_met
 #' @param p_adj_method the multiple correction procedure to be used.
 #' @return a data frame with log fold changes, p_values, q_valuesh.
 #' @importFrom limma voom lmFit eBayes topTable
-#' @importFrom tibble rownames_to_column
 #' @export
 run_limma <- function(dge, metaD, formula, p_adj_method = "BH") {
   design <- model.matrix(formula, data = metaD)
   baysfit <- voom(dge, design) |> # account for differences in uncertainty
     lmFit(design) |>
     eBayes()
-  res1 <- topTable(baysfit, number = Inf, coef = "bmi_groupoverweight", adjust.method = p_adj_method) |>
-    rownames_to_column("ID")
-  res2 <- topTable(baysfit, number = Inf, coef = "bmi_grouplean", adjust.method = p_adj_method) |>
-    rownames_to_column("ID")
+  res1 <- topTable(baysfit, number = Inf, coef = "bmi_groupoverweight", adjust.method = p_adj_method)
+  res2 <- topTable(baysfit, number = Inf, coef = "bmi_grouplean", adjust.method = p_adj_method)
+  res1$ID <- rownames(res1)
+  res2$ID <- rownames(res2)
 
 
   out_df <- data.frame(
