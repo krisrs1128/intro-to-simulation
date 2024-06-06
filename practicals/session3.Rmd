@@ -4,6 +4,25 @@ author: Kris Sankaran
 output: rmdformats::readthedown
 ---
 
+<script>
+function myFunction(id) {
+    var x = document.getElementById(id);
+    if (x.style.display === "none") {
+        x.style.display = "block";
+    } else {
+        x.style.display = "none";
+    }
+}
+</script>
+<style>
+div .info {
+  margin: auto;
+  background-color: #EAF0FB;
+  width: 95%;
+  padding: 10px;
+}
+</style>
+
 ```{r}
 suppressPackageStartupMessages({
   library(MIGsim)
@@ -18,7 +37,7 @@ suppressPackageStartupMessages({
 set.seed(20240603)
 ```
 
-### Horizontal Integration
+# Horizontal Integration
 
 ```{r}
 data(alzheimers)
@@ -56,7 +75,7 @@ pca_batch(batch_correct(alzheimers_sim, "ruv"))
 pca_batch(batch_correct(alzheimers_sim, "combat"))
 ```
 
-## Interlude: Using map
+# Interlude: Using map
 
 ```{r}
 map(1:3, ~ . ^ 2)
@@ -64,7 +83,7 @@ map(list(a = 1, b = 2, c = 3), ~ . + 1)
 ```
 
 
-## Vertical Integration - Influence of Nulls
+# Vertical Integration - Influence of Nulls
 
 ```{r}
 data(icu)

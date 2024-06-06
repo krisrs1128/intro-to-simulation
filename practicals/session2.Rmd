@@ -4,6 +4,25 @@ author: Kris Sankaran
 output: rmdformats::readthedown
 ---
 
+<script>
+function myFunction(id) {
+    var x = document.getElementById(id);
+    if (x.style.display === "none") {
+        x.style.display = "block";
+    } else {
+        x.style.display = "none";
+    }
+}
+</script>
+<style>
+div .info {
+  margin: auto;
+  background-color: #EAF0FB;
+  width: 95%;
+  padding: 10px;
+}
+</style>
+
 How can we choose sample sizes in more complex analysis bioinformatic workflows,
 where we simultaneously analyze many features (taxa, genes, metaabolites) in
 concert? While traditional, analytical power analysis often breaks down,
@@ -48,14 +67,19 @@ below directly gives us this output without our having to explicitly set
 hyerparameters, though you can [look here](https://github.com/krisrs1128/intro-to-simulation/blob/main/MIGsim/R/methods.R) 
 to see how the function was defined.
 
-**Exercise**: Discuss the output of `plotIndiv`. How does `plotVar` shape
-your interpretation?
-
 ```{r}
 result <- splsda_fit(t1d)
 plotIndiv(result$fit)
 plotVar(result$fit)
 ```
+
+**Exercise**: Discuss the output of `plotIndiv`. How does `plotVar` shape
+your interpretation?
+<button onclick="myFunction(&#39;q1&#39;)">
+Show solution
+</button>
+::: {#q0 style="display:none"}
+:::
 
 # Estimation
 
@@ -103,6 +127,24 @@ sim_exper <- sample(simulator)
 correlation_hist(t1d, sim_exper)
 ```
 
+<button onclick="myFunction(&#39;q1&#39;)">
+Show solution
+</button>
+::: {#q1 style="display:none"}
+```{r}
+simulator <- setup_simulator(
+  t1d,
+  link_formula = ~outcome2,
+  family = ~GaussianLSS(),
+  copula_def = copula_adaptive(thr = 0.1)
+) |>
+  estimate(mstop = 100)
+
+sim_exper <- sample(simulator)
+correlation_hist(t1d, sim_exper)
+```
+:::
+
 # PLS-DA Power Analysis
 
 Now that we have a simulator, we can run a power analysis. In theory, we could
@@ -129,13 +171,30 @@ data(t1d_order)
 ```
 
 **Exercise**: Finally, we're in a position to generate synthetic data and
-*evaluate
-PLS-DA performance. Fill in the block below to:
+evaluate PLS-DA performance. Fill in the block below to update the simulator for
+each `i`. Remember that the original `simulator` defined above assumes that all
+proteins are associated with T1D. You can use `t1d_odrer` to prioritize the
+proteins with the strongest effects in the original data.
 
-* Update the simulator for each `i`. Remember that the original `simulator` defined below assumes that all proteins are associated with T1D.  
-* Sample from the updated simulator. Given the simulator, you can use the spls_fit function to compute its AUC.
+```{r power-analysis-loop-setup, eval = FALSE}
+for (i in seq_len(nrow(config))) {
+  simulator <- simulator |>
+    mutate(
+      # fill this in
+    ) |>
+    estimate(mstop = 100)
 
-```{r power-analysis-loop}
+  config$metrics[i] <- (sample_n(simulator, config$sample_size[i]) |>
+    splsda_fit())[["auc"]]
+  print(glue("run {i}/{nrow(config)}"))
+}
+```
+
+<button onclick="myFunction(&#39;q1&#39;)">
+Show solution
+</button>
+::: {#power_loop style="display:none"}
+```{r power-analysis-loop-soln}
 for (i in seq_len(nrow(config))) {
   if (i == 1 || config$n_null[i] != config$n_null[i - 1]) {
     simulator <- simulator |>
@@ -148,6 +207,7 @@ for (i in seq_len(nrow(config))) {
   print(glue("run {i}/{nrow(config)}"))
 }
 ```
+:::
 
 We can visualize variation in performance. 
 
@@ -161,3 +221,9 @@ ggplot(config, aes(sample_size, metrics, col = factor(n_null))) +
 **Discussion**: Interpret the visualization above. How do you think analysis
 like this could help you justify making some experimental investments over
 others?
+
+<button onclick="myFunction(&#39;q1&#39;)">
+Show solution
+</button>
+::: {#discussion style="display:none"}
+:::

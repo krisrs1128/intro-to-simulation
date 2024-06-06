@@ -4,6 +4,25 @@ author: Kris Sankaran
 output: rmdformats::readthedown
 ---
 
+<script>
+function myFunction(id) {
+    var x = document.getElementById(id);
+    if (x.style.display === "none") {
+        x.style.display = "block";
+    } else {
+        x.style.display = "none";
+    }
+}
+</script>
+<style>
+div .info {
+  margin: auto;
+  background-color: #EAF0FB;
+  width: 95%;
+  padding: 10px;
+}
+</style>
+
 ```{r, include = FALSE}
 knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 ```
@@ -72,8 +91,10 @@ answering:
 
 _Hint: The most important functions are `assay()`, `rowData()`, and `colData()`._
 
-Solution:
-
+<button onclick="myFunction(&#39;q1&#39;)">
+Show solution
+</button>
+::: {#q0 style="display:none"}
 ```{r}
 nrow(atlas)
 table(rowData(atlas)$Phylum)
@@ -83,6 +104,7 @@ atlas[, atlas$bmi_group == "obese"] |>
   assay() |>
   rowMeans()
 ```
+:::
 
 # A Gaussian Example
 
@@ -113,17 +135,32 @@ sample(sim) |>
 
 **Exercise**: Right now, each panel allows for an interaction between the trend
 *and
-group type. Can you define a simulator where the groups have no effect on the
-trends? This is the basis for defining synthetic negative controls.
+group type. Can you define a simulator where the groups have no effect on the 
+trends for the first two panels? This is the basis for defining synthetic
+negative controls.
 
-```{r}
+```{r, eval = FALSE}
 sim <- sim |>
-  mutate(1:6, link = ~ ns(time, df = 7)) |>
+  mutate( # fill this in ) |>
   estimate(nu = 0.01, mstop = 1000)
 
 sample(sim) |>
   exper_lineplot()
 ```
+
+<button onclick="myFunction(&#39;q1&#39;)">
+Show solution
+</button>
+::: {#q1 style="display:none"}
+```{r}
+sim <- sim |>
+  mutate(1:3, link = ~ ns(time, df = 7)) |>
+  estimate(nu = 0.01, mstop = 1000)
+
+sample(sim) |>
+  exper_lineplot()
+```
+:::
 
 # Atlas Estimation
 
@@ -150,21 +187,14 @@ sim <- setup_simulator(atlas, fmla, ~ ZINBLSS()) |>
 
 # Critique
 
-**Exercise**: How well does this simulator approximate the original template?
-*The block below
-draws a hypothetical experiment from the original data. Try comparing the
-original `atlas` with the simulated `atlas_` experiments.
-
-_Hint: You can use `pivot_experiment` to convert a `SummarizedExperiment` object into an ordinary data.frame._
-
-```{r}
-atlas_ <- sample(sim)
-```
+**Exercise**: The block below combines the real and simulated experiments and
+visualizes their difference. With your neighbors, discuss how well the simulator
+approximates the original template.
 
 ```{r}
 combined <- bind_rows(
   real = pivot_experiment(atlas), # real data
-  simulated = pivot_experiment(atlas_), # simulated
+  simulated = pivot_experiment(sample(sim)), # simulated
   .id = "source"
 )
 
@@ -174,6 +204,12 @@ ggplot(combined) +
   ) +
   facet_grid(. ~ source)
 ```
+
+<button onclick="myFunction(&#39;q1&#39;)">
+Show solution
+</button>
+::: {#q2 style="display:none"}
+:::
 
 # Power Analysis Loop
 
@@ -225,6 +261,10 @@ for (i in seq_len(nrow(config))) {
 power analysis? Based on your earlier critique of the simulator, do you think
 the estimated power here is conservative, liberal, or just right?
 
+<button onclick="myFunction(&#39;q1&#39;)">
+Show solution
+</button>
+::: {#q3 style="display:none"}
 ```{r}
 bind_rows(results, .id = "run") |>
   left_join(config) |>
@@ -232,3 +272,4 @@ bind_rows(results, .id = "run") |>
   stat_pointinterval(aes(factor(sample_size), value)) +
   facet_wrap(~metric, scales = "free")
 ```
+:::
