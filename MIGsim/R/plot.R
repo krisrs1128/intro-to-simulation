@@ -12,6 +12,33 @@ exper_histogram <- function(exper) {
     facet_wrap(~feature)
 }
 
+contrast_df <- function(template, simulated) {
+  bind_rows(
+    template = pivot_experiment(template),
+    simulated = pivot_experiment(simulated),
+    .id = "source"
+  )
+}
+
+#' @importFrom dplyr filter
+#' @importFrom ggplot2 geom_boxplot
+#' @export
+contrast_histogram <- function(
+    template, simulated, facet_fmla = . ~ reorder(treatment, -value),
+    n_plot = 30) {
+  # abundant features
+  ix <- order(rowSums(assay(template)), decreasing = TRUE)
+  top_features <- head(rownames(template)[ix], n_plot)
+
+  # show side by side
+  contrast_df(template, simulated) |>
+    filter(feature %in% top_features) |>
+    ggplot() +
+    geom_vline(xintercept = 0) +
+    geom_boxplot(aes(value, reorder(feature, value), fill = source)) +
+    facet_grid(facet_fmla)
+}
+
 #' Plot time for toy data
 #' @importFrom ggplot2 geom_point ylim
 #' @export
@@ -33,7 +60,6 @@ select_features <- function(exper, qmin = 0.9, qmax = 1, summary_fun = median) {
 }
 
 #' @importFrom ggplot2 ggplot scale_y_continuous
-#' @importFrom tidyr pivot_longer
 #' @importFrom dplyr everything bind_rows
 #' @export
 correlation_hist <- function(e_true, e_sim) {
@@ -41,7 +67,14 @@ correlation_hist <- function(e_true, e_sim) {
     cor_true = as.numeric(cor(t(assay(e_true)))),
     cor_sim = as.numeric(cor(t(assay(e_sim))))
   ) |>
-    pivot_longer(everything(), names_to = "method") |>
+    data.frame() |>
+    reshape(
+      varying = list(c("cor_true", "cor_sim")),
+      v.names = "value",
+      timevar = "method",
+      times = c("cor_true", "cor_sim"),
+      direction = "long"
+    ) |>
     ggplot() +
     geom_histogram(aes(value, fill = method), position = "identity", alpha = 0.75) +
     scale_y_continuous(expand = c(0, 0, .1, 0))
