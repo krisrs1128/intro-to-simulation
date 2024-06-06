@@ -49,6 +49,20 @@ for (i in seq_along(expers)) {
 }
 
 icu <- expers
-save(icu, file = "~/Downloads/icu.rda")
 use_data(icu)
+```
+
+```{r, eval = FALSE}
+load(url("https://github.com/EvaYiwenWang/Managing_batch_effects/raw/master/Managing_batch_effects/datasets/microbiome_datasets.RData"))
+ad.index.keep <- which(colSums(ad.count)*100/(sum(colSums(ad.count))) > 0.01)
+ad.count.keep <- ad.count[, ad.index.keep]
+ad.count.keep <- ad.count.keep + 1
+ad.clr <- logratio.transfo(ad.count.keep, logratio = 'CLR')
+class(ad.clr) <- 'matrix' 
+
+alzheimers <- SummarizedExperiment(
+  colData = cbind(DataFrame(batch = ad.batch, treatment = as.integer(ad.trt) - 1), ad.metadata),
+  assays = SimpleList(clr = t(ad.clr))
+)
+usethis::use_data(alzheimers, overwrite = TRUE)
 ```
