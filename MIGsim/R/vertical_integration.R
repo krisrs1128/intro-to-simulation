@@ -1,4 +1,3 @@
-
 #' @importFrom mixOmics block.splsda plotIndiv
 #' @export
 exper_splsda <- function(exper, y_var = "Category") {
