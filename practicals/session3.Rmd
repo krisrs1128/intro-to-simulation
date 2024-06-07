@@ -198,7 +198,8 @@ line will update the list so that 1 is added to each element.
 map(list(a = 1, b = 2, c = 3), ~ . + 1)
 ```
 
-To test your understanding, can you write a map that computes the mean for each
+**Exercise**: To test your understanding, can you write a map that computes the
+*mean for each
 vector in the list `x` below? What about the mean of the 10 smallest elements?
 ```{r}
 x <- list(a = rnorm(100), b = rnorm(100, 1))
@@ -315,7 +316,7 @@ Show solution
 ::: {#q-spls style="display:none"}
 We need to define a new link that no longer depends on `Category`. One solution
 is to modify the existing simulator in place using `mutate`.
-```{r, eval = fALSE}
+```{r, eval = FALSE}
 null_simulator[[1]] <- simulator[[1]] |>
   mutate(1:180, link = ~1) |>
   estimate(nu = 0.05)

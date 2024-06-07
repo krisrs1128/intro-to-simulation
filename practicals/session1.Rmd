@@ -66,7 +66,7 @@ set.seed(202406)
 theme_set(theme_classic())
 ```
 
-# Using SummarizedExperiment
+# Using `SummarizedExperiment`
 
 `scDesigner`'s interface is built with `SummarizedExperiment` in mind. These
 data structures simplify manipulation of data from sequencing experiments. For

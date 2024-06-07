@@ -5,7 +5,7 @@ Welcome!! This repository collects materials for the simulation short course tau
 
 
 * Slides: Session [1](https://go.wisc.edu/gfj36r), [2](https://go.wisc.edu/rc776i), [3](https://github.com/krisrs1128/intro-to-simulation/)
-* Exercise Sheets: [1](https://connect.doit.wisc.edu/content/40e0e34c-c63f-444b-b5bf-9c696aa4fcf9), [2](https://connect.doit.wisc.edu/content/a8967d1a-2b04-4a23-b040-1f78e375d13d), [3](https://github.com/krisrs1128/intro-to-simulation/)
+* Exercise Sheets: [1](https://connect.doit.wisc.edu/content/703db915-2910-4ff9-8dbf-3f378aaff402), [2](https://connect.doit.wisc.edu/content/582a3819-654b-45c7-952a-418d330095a9), [3](https://connect.doit.wisc.edu/content/c7d21c7d-0b34-494a-8012-147af02c5be1/)
 
 All data used in these notebooks is contained in the `MIGsim` package. For
 example, to load the `atlas` dataset, you can run:
