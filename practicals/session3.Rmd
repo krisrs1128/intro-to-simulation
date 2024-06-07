@@ -23,6 +23,20 @@ div .info {
 }
 </style>
 
+Integration can be a subtle exercise. We need to balance our interest in seeing
+similarities between datasets with the risk of making things seem more similar
+than they really are. Simulation can help navigate this subtlety by letting us
+see how integration methods would behave in situations where we know exactly how
+the different datasets are related. This note will illustrate this perspective
+by showing how simulation can help with both horizontal (across batches) and
+vertical (across assays) integration. We'll have a brief interlude on the `map`
+function in the `purrr`, which is helpful for concisely writing code that would
+otherwise need for loops (e.g., over batches or assays).
+
+As usual, let's load the libraries we'll need. Remember that instructions for
+installing `MIGsim` and `scDesigner` are documented in the repository
+[README](https://github.com/krisrs1128/intro-to-simulation/).
+
 ```{r}
 suppressPackageStartupMessages({
   library(MIGsim)
@@ -39,10 +53,34 @@ set.seed(20240603)
 
 # Horizontal Integration
 
+The first example is about simultaneously analyzing several batches in a dataset
+about the role of the microbiome in Alzheimer's disease. The essential problem
+is that, in a typical high-throughput sequencing study, it's not possible to
+process all the samples simultaneously, so they are run in separate batches.
+Small differences across these runs can lead to systematic differences in the
+resulting data, which can obfuscate the more interesting between-group variation
+that we intended for the experiment to uncover. For example, in the Alzheimer's
+dataset, the date of the sequencing run has a global effect on measured
+community composition, which we can see right away from a principal components
+plot:
+
 ```{r}
 data(alzheimers)
 pca_batch(alzheimers)
 ```
+
+You can learn more about the general microbiome batch effect integration problem
+in [(Wang and Le Cao, 2020)](https://doi.org/10.1093/bib/bbz105), which is where
+this dataset example and the batch effect correction code below comes from. The
+article also reviews many more methods for removing these effects and discusses
+the situations within which they are most appropriate.
+
+In batch effect correction, it's important to remove as much of the batch
+variation as possible without accidentally also removing the real biological
+variation that would have been present even if all the samples had been
+sequenced together. This is sometimes called ``overintegration,'' and this is an
+especially high risk if some of the real biological variation is quite subtle,
+e.g., a rare cell type or one that is very similar to a more prominent one.
 
 ```{r}
 simulator <- setup_simulator(
