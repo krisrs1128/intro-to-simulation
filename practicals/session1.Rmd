@@ -75,7 +75,7 @@ example, they distinguish between molecule counts, which are stored in the
 subsetting samples from one of these tables automatically subsets the other.
 
 The line below loads a very small subset of genera from the Atlas 1001
-experiment. This experiment (tk fill in a bit about what it was about, Lahti2014).
+experiment.
 
 ```{r}
 data(atlas)
@@ -141,7 +141,9 @@ negative controls.
 
 ```{r, eval = FALSE}
 sim <- sim |>
-  mutate( # fill this in ) |>
+  mutate(
+    # fill this in
+  ) |>
   estimate(nu = 0.01, mstop = 1000)
 
 sample(sim) |>

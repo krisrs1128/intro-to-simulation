@@ -87,7 +87,7 @@ type. Since the data have already been centered log-ratio transformed, it's okay
 to treat these as Gaussian. 
 
 ```{r}
-simulator <- setup_simulator(t1d, link_formula = ~outcome2, family = ~GaussianLSS()) |>
+simulator <- setup_simulator(t1d, link_formula = ~outcome2, family = ~ GaussianLSS()) |>
   estimate(mstop = 100)
 ```
 
@@ -117,9 +117,9 @@ histograms and comment on the changes you observe.
 simulator <- setup_simulator(
   t1d,
   link_formula = ~outcome2,
-  family = ~GaussianLSS(),
+  family = ~ GaussianLSS(),
   copula_def = # fill this code in
-) |>
+  ) |>
   estimate(mstop = 100)
 
 sim_exper <- sample(simulator)
@@ -134,7 +134,7 @@ Show solution
 simulator <- setup_simulator(
   t1d,
   link_formula = ~outcome2,
-  family = ~GaussianLSS(),
+  family = ~ GaussianLSS(),
   copula_def = copula_adaptive(thr = 0.1)
 ) |>
   estimate(mstop = 100)
@@ -213,7 +213,7 @@ We can visualize variation in performance.
 ```{r}
 ggplot(config, aes(sample_size, metrics, col = factor(n_null))) +
   geom_point() +
-  facet_wrap(~ n_null)
+  facet_wrap(~n_null)
 ```
 
 
