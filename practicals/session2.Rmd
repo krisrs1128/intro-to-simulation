@@ -23,12 +23,11 @@ div .info {
 }
 </style>
 
-How can we choose sample sizes in more complex analysis bioinformatic workflows,
-where we simultaneously analyze many features (taxa, genes, metaabolites) in
-concert? While traditional, analytical power analysis often breaks down,
-simulation can still be effective. We'll look at a concrete case study where we
-try to choose a good sample size for a PLS-DA analysis of the Type I Diabetes
-gut microbiome.
+How can we choose sample sizes in more complex bioinformatic workflows, where we
+simultaneously analyze many features (taxa, genes, metaabolites) in concert?
+While traditional, analytical power analysis often breaks down, simulation can
+still be effective. We'll look at a concrete case study where we try to choose a
+good sample size for a PLS-DA analysis of the Type I Diabetes gut microbiome.
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(message = FALSE, warning = FALSE)
