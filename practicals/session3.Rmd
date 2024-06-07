@@ -213,48 +213,123 @@ purrr::map(x, ~ mean(sort(.)[1:10]))
 ```
 :::
 
-# Vertical Integration - Influence of Nulls
+# Vertical Integration
+
+In horizontal integration, we have many datasets, all with the same features.
+They only differ because they were gathered at different types. In contrast, for
+vertical integration, we instead have many datasets all with the same _samples_.
+They differ because they measure different aspects of those samples. Our goal in
+this situation is not to remove differences across datasets, like it was in
+horizontal integration, but instead to clarify the relationships across sources.
+
+One important question that often arises in vertical integration is -- are the
+data even alignable? That is, in our effort to look for relationships across
+datasets, we might accidentally miss out on interesting variation that exists
+within the individual assays. If the technologies are measuring very different
+things, we might be better off simply analyzing the data separately. To help us
+gauge which setting we might be in, we can simulate data where we know that we
+shouldn't align the sources. If our integration methods are giving similar
+outputs as they give on this simulated data, then we should be more cautious.
+
+There are a few ways in which a dataset might not be ``alignable.'' The most
+general reason is that there may be no latent sources of variation in common
+between the sources. A simpler reason is that something that influenced one
+assay substantially (e.g., disease state) might not influence the other by much.
+Let's see how an integration method might work in this setting.
+
+We'll work with the ICU sepsis dataset previously studied by [Haak et al.
+(2021)](https://doi.org/10.1128/mSystems.01148-20) and documented within a
+[vignette](https://raw.githack.com/bioFAM/MOFA2_tutorials/master/R_tutorials/microbiome_vignette.html#train-mofa-model).
+for the MOFA package. The three datasets here are 16S bacterial, ITS fungal, and
+Virome assays, all applied to different healthy and sepsis patient populations.
+Moreover, some participants were on a course of antibiotics while others were
+not. The question is how either sepsis, antibiotics, or their interaction
+affects the microbiome viewed through these three assays. The data are printed
+below, they have already been filtered and CLR transformed following the MOFA
+vignette.
 
 ```{r}
 data(icu)
+icu
+```
+
+We can simultaneously analyze these data sources using block SPLS-DA.  This is
+the multi-assay version of the analysis that we saw in the previous session.
+`exper_splsda` is a very light wrapper of a mixOmics function call, which you
+can read
+[here](https://github.com/krisrs1128/intro-to-simulation/blob/9f842ef52fdbe9a137833531147ceb3bc1f7ae81/MIGsim/R/vertical_integration.R#L3).
+The output plot below shows that each assay differs across groups, and this is
+quantitatively summarized by the high estimated weights between each category
+and the estimated PLS directions.
+
+```{r}
+fit <- exper_splsda(icu)
+plotIndiv(fit)
+fit$weights
+```
+
+How would the output have looked if 16S community composition had not been
+related to disease or antibiotics groups? Since integrative analysis prioritizes
+similarities across sources, we expect this to mask some of the real differences
+in the fungal and virus data as well. We can use simulation to gauge the extent
+of this masking.
+
+Our first step is to train a simulator.  We're just learning four different
+setes of parameters for each of the four observed groups. This is not as nuanced
+as learning separate effects for sepsis and antibiotics, but it will be enough
+for illustration. We have used `map` to estimate a simulator for each assay in
+the `icu` list.
+
+```{r}
 simulator <- map(
   icu,
   ~ setup_simulator(., ~ Category, ~ GaussianLSS()) |>
     estimate(nu = 0.05)
 )
-x <- sample(simulator[[1]])
 ```
 
-An example where we either do or do not have any true association with category,
-to see how the integration outputs change.
+So far, we haven't tried removing any relationships present in the 16S assay,
+and indeed our integrative analysis output on the simulated data looks
+comparable to that from the original study.
 
 ```{r}
-fit <- exper_splsda(icu)
+icu_sim <- map(simulator, sample)
+fit <- exper_splsda(icu_sim)
 plotIndiv(fit)
 ```
 
-Question: Do you think weak disease associations in one assay influence the
-dimensionality reduction outputs in another? If so, how?
+**Exercise**: Modify the simulator above so that the 16S group no longer depends
+on disease cateogry. This will allow us to study how the integrative analysis
+output changes when the data are not alignable.
 
 ```{r}
 null_simulator <- simulator
-null_simulator[[1]] <- simulator[[1]] |>
-  scDesigner::mutate(1:180, link = ~ 1, family = ~ GaussianLSS()) |>
-  estimate(nu = 0.05)
-
-# null_simulator[[2]] <- simulator[[2]] |>
-#   scDesigner::mutate(1:18, link = ~ 1, family = ~ GaussianLSS()) |>
-#   estimate(nu = 0.05)
-```
-
-```{r}
-icu_sim <- map(null_simulator, sample)
-fit <- exper_splsda(icu_sim)
-plotIndiv(fit)
+# fill this in
+# null_simulator[[1]] <- ???
 ```
 
 <button onclick="myFunction(&#39;q1&#39;)">
 Show solution
 </button>
 ::: {#q-spls style="display:none"}
+We need to define a new link that no longer depends on `Category`. One solution is to modify the existing simulator in place using `mutate`.
+```{r, eval = fALSE}
+null_simulator[[1]] <- simulator[[1]] |>
+  mutate(1:180, link = ~ 1) |>
+  estimate(nu = 0.05)
+```
+Since we are modifying all taxa, a simpler solution is to just define a
+new simulator from scratch.
+```{r}
+null_simulator[[1]] <- setup_simulator(icu[[1]], ~ 1, ~ GaussianLSS())
+```
 :::
+
+Given this new simulator we can 
+
+```{r}
+icu_sim <- map(null_simulator, sample)
+fit <- exper_splsda(icu_sim)
+plotIndiv(fit)
+fit$weights
+```
