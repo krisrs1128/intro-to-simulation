@@ -23,7 +23,7 @@ contrast_df <- function(template, simulated) {
 #' @importFrom dplyr filter
 #' @importFrom ggplot2 geom_boxplot
 #' @export
-contrast_histogram <- function(
+contrast_boxplot <- function(
     template, simulated, facet_fmla = . ~ reorder(treatment, -value),
     n_plot = 30) {
   # abundant features
