@@ -48,6 +48,7 @@ suppressPackageStartupMessages({
   library(purrr)
   library(scDesigner)
 })
+theme_set(theme_classic())
 set.seed(20240603)
 ```
 
@@ -121,11 +122,12 @@ contrast_boxplot(alzheimers, alzheimers_sim)
 used to compare and contrast the simulator with real data. What conclusions can
 you draw?
 
-<button onclick="myFunction(&#39;q1&#39;)">
+<button onclick="myFunction(&#39;q-vis&#39;)">
 Show solution
 </button>
 ::: {#q-vis style="display:none"}
 There are many possible answers:
+
 * Boxplots across taxa with different overall abundance levels.
 * Analogous histograms or CDF plots, to show the entire distributions, rather than just summarized quantiles.
 * Pair scatterplots, to see how well the bivariate relationships between taxa are preserved.
@@ -204,13 +206,13 @@ vector in the list `x` below? What about the mean of the 10 smallest elements?
 ```{r}
 x <- list(a = rnorm(100), b = rnorm(100, 1))
 ```
-<button onclick="myFunction(&#39;q1&#39;)">
+<button onclick="myFunction(&#39;q-map&#39;)">
 Show solution
 </button>
 ::: {#q-map style="display:none"}
 ```{r}
-purrr::map(x, mean)
-purrr::map(x, ~ mean(sort(.)[1:10]))
+map(x, mean)
+map(x, ~ mean(sort(.)[1:10]))
 ```
 :::
 
@@ -294,7 +296,10 @@ and indeed our integrative analysis output on the simulated data looks
 comparable to that from the original study.
 
 ```{r}
-icu_sim <- map(simulator, sample)
+icu_sim <- join_copula(simulator, copula_adaptive()) |>
+  sample() |>
+  split_assays()
+
 fit <- exper_splsda(icu_sim)
 plotIndiv(fit)
 fit$weights
@@ -310,7 +315,7 @@ null_simulator <- simulator
 # null_simulator[[1]] <- ???
 ```
 
-<button onclick="myFunction(&#39;q1&#39;)">
+<button onclick="myFunction(&#39;q-spls&#39;)">
 Show solution
 </button>
 ::: {#q-spls style="display:none"}
@@ -325,24 +330,31 @@ Since we are modifying all taxa, a simpler solution is to just define a
 new simulator from scratch.
 ```{r}
 null_simulator[[1]] <- setup_simulator(icu[[1]], ~1, ~ GaussianLSS()) |>
-  estimate()
+  estimate(nu = 0.05)
 ```
 :::
 
-We can rerun the integrative analysis using the modified simulator.
-Unsurprisingly, there is no longer any association between the
-disease/antibiotics categories an bacterial community composition. We can also
-observe this through the dropoff in weight for the bacterial table.  There also
-seems to be a minor deterioration in the group separations for the fungal and
-virus communities, and the component weights are higher when we work with only
-the fungal and virus assays. If we notice siuations like this, where one group
-is not related to the response variable, we may be able to increase power by
-focusing on assays that are. Nonetheless, the block sPLS-DA also seems
-relatively robust -- considering the dramatic change in the microbiome table,
-the output for the remaining tables still surfaces interesting relationships.
+We can rerun the integrative analysis using the modified simulator. Somewhat
+surprisingly, the disease association in the bacteria group hasn't been erased.
+This is an artifact of the integration. The other assays have associations with
+disease group, and since the method encourages outputs across tables to be
+consistent with one another, we have artificially introduced some structure into
+the bacteria visualization (even if it is quite weak.) Nonetheless, we still
+observe a large dropoff in weight for the bacterial table. Further, there seems
+to be a minor deterioration in the group separations for the fungal and virus
+communities, and the component weights are higher when we work with only the
+fungal and virus assays. Altogether, this suggests that we may want to check
+table-level associations with the response variable, especially if any of the
+integration outputs are ambiguous. In this case, we might be able to increase
+power by focusing only on class-associated assays.  Nonetheless, the block
+sPLS-DA also seems relatively robust -- considering the dramatic change in the
+microbiome table, the output for the remaining tables still surfaces interesting
+relationships.
 
 ```{r}
-icu_sim <- map(null_simulator, sample)
+icu_sim <- join_copula(null_simulator, copula_adaptive()) |>
+  sample() |>
+  split_assays()
 fit <- exper_splsda(icu_sim)
 plotIndiv(fit)
 fit$weights

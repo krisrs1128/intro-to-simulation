@@ -30,7 +30,7 @@ still be effective. We'll look at a concrete case study where we try to choose a
 good sample size for a PLS-DA analysis of the Type I Diabetes gut microbiome.
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
 ```
 
 First, we'll load the required packages. Relative to session 1, the only
@@ -69,15 +69,17 @@ to see how the function was defined.
 ```{r}
 result <- splsda_fit(t1d)
 plotIndiv(result$fit)
-plotVar(result$fit)
+plotVar(result$fit, cutoff = 0.4)
 ```
 
 **Exercise**: Discuss the output of `plotIndiv`. How does `plotVar` shape
 your interpretation?
-<button onclick="myFunction(&#39;q1&#39;)">
+<button onclick="myFunction(&#39;q0&#39;)">
 Show solution
 </button>
+
 ::: {#q0 style="display:none"}
+Placeholder.
 :::
 
 # Estimation
@@ -189,7 +191,7 @@ for (i in seq_len(nrow(config))) {
 }
 ```
 
-<button onclick="myFunction(&#39;q1&#39;)">
+<button onclick="myFunction(&#39;power_loop&#39;)">
 Show solution
 </button>
 ::: {#power_loop style="display:none"}
@@ -221,7 +223,7 @@ ggplot(config, aes(sample_size, metrics, col = factor(n_null))) +
 like this could help you justify making some experimental investments over
 others?
 
-<button onclick="myFunction(&#39;q1&#39;)">
+<button onclick="myFunction(&#39;discussion&#39;)">
 Show solution
 </button>
 ::: {#discussion style="display:none"}
