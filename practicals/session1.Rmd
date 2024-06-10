@@ -136,8 +136,7 @@ sample(sim) |>
   exper_lineplot()
 ```
 
-**Exercise**: Right now, each panel allows for an interaction between the trend
-*and
+**Exercise**: Right now, each panel allows for an interaction between the trend and
 group type. Can you define a simulator where the groups have no effect on the 
 trends for the first two panels? This is the basis for defining synthetic
 negative controls.
@@ -156,12 +155,12 @@ sample(sim) |>
 <button onclick="myFunction(&#39;q1&#39;)">
 Show solution
 </button>
+::: {#q1 style="display:none"}
 We can modify the formula so that it no longer has an interaction with group.
 We just need to remove the `* group` from the original formula in our updated
 link function. To ensure that this only applies to the first two panels, we use
 1:2 in the first argument of `mutate`. This first argument specifies which 
 features to apply the new formula to.
-::: {#q1 style="display:none"}
 ```{r}
 sim <- sim |>
   mutate(1:2, link = ~ ns(time, df = 7)) |>
@@ -288,6 +287,7 @@ that the average false discovery proportion is always controlled below 0.3,
 though the variance in this proportion can be quite high. We can also see that
 we would have quite good power with $n \geq 625$ samples, but the worst case
 scenarios can be quite poor for anything with fewer samples.
+
 ```{r, visualize-power}
 bind_rows(results, .id = "run") |>
   left_join(config) |>
@@ -295,6 +295,7 @@ bind_rows(results, .id = "run") |>
   stat_pointinterval(aes(factor(sample_size), value)) +
   facet_wrap(~metric, scales = "free")
 ```
+
 We expect that this result is somewhat conservative. This is because the
 original data have more symmetric distributions than our simulation, so limma's
 transformation to normality is likely easier to accomplish than in our more 
