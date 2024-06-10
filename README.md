@@ -4,7 +4,7 @@
 Welcome!! This repository collects materials for the simulation short course taught through Melbourne Integrative Genomics in June 2024. Here, you can learn about how controllable, template-driven simulations can be designed and applied to subtle questions in high-throughput biology.
 
 
-* Slides: Session [1](https://go.wisc.edu/gfj36r), [2](https://go.wisc.edu/rc776i), [3](https://github.com/krisrs1128/intro-to-simulation/)
+* Slides: Session [1](https://go.wisc.edu/gfj36r), [2](https://go.wisc.edu/rc776i), [3](https://go.wisc.edu/54tmr9)
 * Exercise Sheets: [1](https://connect.doit.wisc.edu/content/703db915-2910-4ff9-8dbf-3f378aaff402), [2](https://connect.doit.wisc.edu/content/582a3819-654b-45c7-952a-418d330095a9), [3](https://connect.doit.wisc.edu/content/c7d21c7d-0b34-494a-8012-147af02c5be1/)
 
 All data used in these notebooks is contained in the `MIGsim` package. For
