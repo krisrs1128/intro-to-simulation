@@ -156,6 +156,11 @@ sample(sim) |>
 <button onclick="myFunction(&#39;q1&#39;)">
 Show solution
 </button>
+We can modify the formula so that it no longer has an interaction with group.
+We just need to remove the `* group` from the original formula in our updated
+link function. To ensure that this only applies to the first two panels, we use
+1:2 in the first argument of `mutate`. This first argument specifies which 
+features to apply the new formula to.
 ::: {#q1 style="display:none"}
 ```{r}
 sim <- sim |>
@@ -290,4 +295,8 @@ bind_rows(results, .id = "run") |>
   stat_pointinterval(aes(factor(sample_size), value)) +
   facet_wrap(~metric, scales = "free")
 ```
+We expect that this result is somewhat conservative. This is because the
+original data have more symmetric distributions than our simulation, so limma's
+transformation to normality is likely easier to accomplish than in our more 
+highly skewed data.
 :::

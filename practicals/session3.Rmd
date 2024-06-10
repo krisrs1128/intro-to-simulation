@@ -55,19 +55,18 @@ set.seed(20240603)
 # Horizontal Integration
 
 The first example is about simultaneously analyzing several batches in a dataset
-about the role of the microbiome in Alzheimer's disease. The essential problem
-is that, in a typical high-throughput sequencing study, it's not possible to
-process all the samples simultaneously, so they are run in separate batches.
-Small differences across these runs can lead to systematic differences in the
-resulting data, which can obfuscate the more interesting between-group variation
-that we intended for the experiment to uncover. For example, in the Alzheimer's
-dataset, the date of the sequencing run has a global effect on measured
-community composition, which we can see right away from a principal components
-plot:
+about the efficiency of anaerobic digestion (AD) of organic matter. The
+essential problem is that, in this study, the samples could not be collected
+simultaneously. Small differences across separate runs could lead to systematic
+differences in the resulting data, which can obfuscate the more interesting
+between-group variation that we intended for the experiment to uncover. For
+example, in the AD dataset, the date of the sequencing run has a global effect
+on measured community composition, which we can see right away from a principal
+components plot:
 
 ```{r}
-data(alzheimers)
-pca_batch(alzheimers)
+data(anaerobic)
+pca_batch(anaerobic)
 ```
 
 You can learn more about the general microbiome batch effect integration problem
@@ -94,13 +93,13 @@ batch and treatment (the treatment could appear stronger in some batches than
 others). I encourage you to try estimating that model; however, visually
 analyzing the output suggests that this full model has a tendancy to overfit.
 Since the data have already been centered log-ratio transformed, we can try out
-a Gaussian marginal model. The Alzheimer's dataset has relatively few samples
+a Gaussian marginal model. The AD dataset has relatively few samples
 compared to the number of features, so we'll use a copula that's designed for
 this setting.
 
 ```{r}
 simulator <- setup_simulator(
-  alzheimers,
+  anaerobic,
   ~ batch + treatment,
   ~ GaussianLSS(),
   copula = copula_adaptive(thr = .1)
@@ -114,8 +113,8 @@ compare experiments from our first session, and you can read its definition
 [here](https://github.com/krisrs1128/intro-to-simulation/blob/10fa498aea952684204b2f15c387a7983c30626d/MIGsim/R/plot.R#L26).
 
 ```{r}
-alzheimers_sim <- sample(simulator)
-contrast_boxplot(alzheimers, alzheimers_sim)
+anaerobic_sim <- sample(simulator)
+contrast_boxplot(anaerobic, anaerobic_sim)
 ```
 
 **Exercise** Propose and create at least one other visualization that can be
@@ -141,7 +140,7 @@ seem reasonaly well-preserved, since these will be the types of effects that our
 later batch effect integration methods must be able to distinguish.
 
 ```{r}
-pca_batch(alzheimers_sim)
+pca_batch(anaerobic_sim)
 ```
 :::
 
@@ -163,8 +162,8 @@ group seems from the others. It's a subtle effect, definitely smaller than the
 batch effect, but also separate enough that we should be able to preserve it.
 
 ```{r}
-alzheimers_sim <- sample(simulator, new_data = imaginary_design)
-pca_batch(alzheimers_sim)
+anaerobic_sim <- sample(simulator, new_data = imaginary_design)
+pca_batch(anaerobic_sim)
 ```
 
 We've defined a `batch_correct` wrapper function that implements either the
@@ -179,8 +178,8 @@ for the `MIGsim` package. Can you find settings that lead either method astray?
 (we've found that larger treatment effects can cause RUV to underintegrate).
 
 ```{r}
-pca_batch(batch_correct(alzheimers_sim, "ruv"))
-pca_batch(batch_correct(alzheimers_sim, "combat"))
+pca_batch(batch_correct(anaerobic_sim, "ruv"))
+pca_batch(batch_correct(anaerobic_sim, "combat"))
 ```
 
 # Interlude: Using map
