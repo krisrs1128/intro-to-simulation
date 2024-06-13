@@ -59,7 +59,7 @@ about the efficiency of anaerobic digestion (AD) of organic matter. The
 essential problem is that, in this study, the samples could not be collected
 simultaneously. Small differences across separate runs could lead to systematic
 differences in the resulting data, which can obfuscate the more interesting
-between-group variation that we intended for the experiment to uncover. For
+between-group variation that the experiment was intended to uncover. For
 example, in the AD dataset, the date of the sequencing run has a global effect
 on measured community composition, which we can see right away from a principal
 components plot:
@@ -72,8 +72,9 @@ pca_batch(anaerobic)
 You can learn more about the general microbiome batch effect integration problem
 in [(Wang and Le Cao, 2020)](https://doi.org/10.1093/bib/bbz105), which is where
 this dataset example and the batch effect correction code below comes from. The
-article also reviews many more methods for removing these effects and discusses
-the situations within which they are most appropriate.
+article also reviews mechanisms that could lead to batch effects in microbiome
+data, together with methods for removing these effects and the situations within
+which they are most appropriate.
 
 In batch effect correction, it's important to remove as much of the batch
 variation as possible without accidentally also removing the real biological
@@ -175,7 +176,6 @@ aside, we note that this conclusion can depend on the number of replicates and
 total number of samples available. We've included the code for generating the
 `imaginary_design` data.frame in [a vignette](https://github.com/krisrs1128/intro-to-simulation/blob/10fa498aea952684204b2f15c387a7983c30626d/MIGsim/vignettes/process-integration.Rmd#L76)
 for the `MIGsim` package. Can you find settings that lead either method astray?
-(we've found that larger treatment effects can cause RUV to underintegrate).
 
 ```{r}
 pca_batch(batch_correct(anaerobic_sim, "ruv"))
@@ -218,7 +218,7 @@ map(x, ~ mean(sort(.)[1:10]))
 # Vertical Integration
 
 In horizontal integration, we have many datasets, all with the same features.
-They only differ because they were gathered at different types. In contrast, for
+They only differ because they were gathered at different times. In contrast, for
 vertical integration, we instead have many datasets all with the same _samples_.
 They differ because they measure different aspects of those samples. Our goal in
 this situation is not to remove differences across datasets, like it was in
