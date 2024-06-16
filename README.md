@@ -28,28 +28,26 @@ We've defined a small package called `MIGsim` containing all the data and helper
 functions that we'll use today. You can install it with:
 
 ```{r}
-library(devtools)
 install_github("krisrs1128/intro-to-simulation/MIGsim")
+```
+
+Confirm that you can load the packages without any errors.
+
+```{r}
+library(devtools)
+library(MIGsim)
+```
+
+`MIGsim` should install the `scDesigner` package in the background. This is a
+simulation package that is still under development and so is not listed in a
+public package repository. Check that you can also load this library.
+
+```{r}
+library(scDesigner)
 ```
 
 This line assumes you already have the `devtools` package installed. If not,
 make sure to run `install.packages('devtools')` first.
-
-The simulation package we'll be exploring is currently under development, so
-isn't listed publicly. For our experiments, we can instesad install the private
-version at this link -- remember to replace the `auth_token` field with the code
-shared in the pre-workshop announcement.
-
-```{r}
-install_github("krisrs1128/scDesigner", auth_token = "paste_token_here")
-```
-
-Finally, confirm that you can load the packages without any errors.
-
-```{r}
-library(MIGsim)
-library(scDesigner)
-```
 
 If you have any difficulties at all, please raise an
 [issue](https://github.com/krisrs1128/intro-to-simulation/issues) or send an
