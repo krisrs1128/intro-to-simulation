@@ -241,7 +241,7 @@ Let's see how an integration method might work in this setting.
 
 We'll work with the ICU sepsis dataset previously studied by [Haak et al.
 (2021)](https://doi.org/10.1128/mSystems.01148-20) and documented within a
-[vignette](https://raw.githack.com/bioFAM/MOFA2_tutorials/master/R_tutorials/microbiome_vignette.html#train-mofa-model).
+[vignette](https://raw.githack.com/bioFAM/MOFA2_tutorials/master/R_tutorials/microbiome_vignette.html#train-mofa-model)
 for the MOFA package. The three datasets here are 16S bacterial, ITS fungal, and
 Virome assays, all applied to different healthy and sepsis patient populations.
 Moreover, some participants were on a course of antibiotics while others were
