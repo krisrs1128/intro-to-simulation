@@ -24,14 +24,14 @@ div .info {
 </style>
 
 How can we choose sample sizes in more complex bioinformatic workflows, where we
-simultaneously analyze many features (taxa, genes, metaabolites) in concert?
+simultaneously analyze many features (taxa, genes, metabolites) in concert?
 While traditional, analytical power analysis often breaks down, simulation can
 still be effective. We'll look at a concrete case study where we try to choose a
 good sample size for a sparse partial least squares discriminant analysis
 (sPLS-DA) of the Type I Diabetes (T1D) gut microbiome.
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
+knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = FALSE)
 ```
 
 First, we'll load the required packages. Relative to our first session, the only
@@ -40,13 +40,13 @@ additional package that we need is `mixOmics`. This can be installed using
 
 ```{r}
 suppressPackageStartupMessages({
-  library(MIGsim)
   library(SummarizedExperiment)
   library(dplyr)
   library(gamboostLSS)
   library(glue)
   library(mixOmics)
   library(ggplot2)
+  library(MIGsim)
   library(scDesigner)
 })
 set.seed(202406)
@@ -79,6 +79,7 @@ plotVar(result$fit, cutoff = 0.4, cex = 4)
 
 **Exercise**: Discuss the output of `plotIndiv`. How does `plotVar` shape
 your interpretation?
+
 <button onclick="myFunction(&#39;q0&#39;)">
 Show solution
 </button>
@@ -246,7 +247,6 @@ ggplot(config, aes(sample_size, metrics, col = factor(n_null))) +
   geom_point() +
   facet_wrap(~n_null)
 ```
-
 
 **Discussion**: Interpret the visualization above. How do you think analysis
 like this could help you justify making some experimental investments over
