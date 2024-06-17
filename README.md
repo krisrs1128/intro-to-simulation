@@ -29,13 +29,16 @@ We've defined a small package called `MIGsim` containing all the data and helper
 functions that we'll use today. You can install it with:
 
 ```{r}
+library(devtools)
 install_github("krisrs1128/intro-to-simulation/MIGsim")
 ```
+
+This line assumes you already have the `devtools` package installed. If not,
+make sure to run `install.packages('devtools')` first.
 
 Confirm that you can load the packages without any errors.
 
 ```{r}
-library(devtools)
 library(MIGsim)
 ```
 
@@ -46,9 +49,6 @@ public package repository. Check that you can also load this library.
 ```{r}
 library(scDesigner)
 ```
-
-This line assumes you already have the `devtools` package installed. If not,
-make sure to run `install.packages('devtools')` first.
 
 If you have any difficulties at all, please raise an
 [issue](https://github.com/krisrs1128/intro-to-simulation/issues) or send an
