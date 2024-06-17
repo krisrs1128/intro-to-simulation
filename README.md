@@ -5,7 +5,7 @@ Welcome!! This repository collects materials for the simulation short course tau
 
 
 * Slides: Session [1](https://go.wisc.edu/gfj36r), [2](https://go.wisc.edu/rc776i), [3](https://go.wisc.edu/54tmr9)
-* Exercise Sheets: [1](https://go.wisc.edu/v986n5), [2](https://connect.doit.wisc.edu/content/582a3819-654b-45c7-952a-418d330095a9), [3](https://connect.doit.wisc.edu/content/c7d21c7d-0b34-494a-8012-147af02c5be1/)
+* Exercise Sheets: [1](https://go.wisc.edu/v986n5), [2](https://go.wisc.edu/441a60), [3](https://connect.doit.wisc.edu/content/c7d21c7d-0b34-494a-8012-147af02c5be1/)
 * Recordings: Session [1](https://uwmadison.box.com/s/qo4vc9v31obw5gfrqhd8ds2l0hkt3wza), [2](), [3]()
 
 All data used in these notebooks is contained in the `MIGsim` package. For
