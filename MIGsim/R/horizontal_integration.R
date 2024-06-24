@@ -1,10 +1,10 @@
 #' @importFrom SummarizedExperiment assay
 #' @export
-batch_correct <- function(exper, method = "ruv") {
+batch_correct <- function(exper, method = "ruv", ...) {
   if (method == "ruv") {
-    x <- ruv_correct(exper)
+    x <- ruv_correct(exper, ...)
   } else if (method == "combat") {
-    x <- combat_correct(exper)
+    x <- combat_correct(exper, ...)
   }
   assay(exper) <- t(x)
   exper
@@ -32,7 +32,7 @@ pca_batch <- function(exper, facet = TRUE) {
 
 #' @importFrom SummarizedExperiment colData assay
 #' @importFrom insight check_if_installed
-ruv_correct <- function(exper, alpha = 0.05, k = 4) {
+ruv_correct <- function(exper, alpha = 0.05, k = 10) {
   check_if_installed("ruv", "to apply RUV-III correction. Please install this package using install.packages('ruv').")
   trt_p <- apply(assay(exper), 1, FUN = function(x) {
     res.lm <- lm(x ~ treatment + batch, data = colData(exper))

@@ -1,0 +1,42 @@
+---
+title: "Generate Correlation Matrices"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Processing for Integration}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+This generates the ground truth correlation matrices used in the network benchmarking case study.
+
+```{r}
+library(rags2ridges)
+library(purrr)
+
+block <- c(0.4, .6, 0.8) |>
+  map(~ matrix(., nrow = 15, ncol = 15)) |>
+  Matrix::bdiag() |>
+  as.matrix()
+diag(block) <- 1
+
+N <- 1000
+example_rho <- list(block = block)
+example_rho[["scale_free"]] <- createS(n = N, p = 45, topology = "scale-free", precision = TRUE) |>
+  solve() |>
+  cov2cor()
+example_rho[["banded"]] <- createS(n = N, p = 45, topology = "banded", banded.n = 5, precision = TRUE) |>
+  solve() |>
+  cov2cor()
+example_rho[["small_world"]] <- createS(n = N, p = 45, topology = "small-world", precision = TRUE) |>
+  solve() |>
+  cov2cor()
+example_rho[["erdos_renyi"]] <- createS(n = N, p = 45, topology = "Erdos-Renyi", precision = TRUE) |>
+  solve() |>
+  cov2cor()
+
+for (i in seq_along(example_rho)) {
+  dimnames(example_rho[[i]]) <- NULL
+}
+
+usethis::use_data(example_rho, overwrite = TRUE)
+```
