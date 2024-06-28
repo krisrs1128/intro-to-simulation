@@ -79,3 +79,47 @@ correlation_hist <- function(e_true, e_sim) {
     geom_histogram(aes(value, fill = method), position = "identity", alpha = 0.75) +
     scale_y_continuous(expand = c(0, 0, .1, 0))
 }
+
+reshape_rho <- function(rho) {
+  rho_df <- as.data.frame(rho)
+  rho_df$feature1 <- rownames(rho_df)
+  rho_long <- reshape(
+    rho_df, 
+    varying = list(names(rho_df)[1:(ncol(rho_df)-1)]), 
+    v.names = "value", 
+    timevar = "feature2", 
+    times = names(rho_df)[1:(ncol(rho_df)-1)], 
+    idvar = "feature1", 
+    direction = "long"
+  )
+  rownames(rho_long) <- NULL
+  rho_long[, c("feature1", "feature2", "value")]
+}
+
+#' @importFrom dplyr mutate
+#' @importFrom ggplot2 ggplot geom_tile labs aes theme
+#' @importFrom scico scale_fill_scico scale_color_scico
+#' @importFrom tibble rownames_to_column
+#' @importFrom tidyr pivot_longer
+#' @export
+correlation_heatmap <- function(rho, feature_order, bins = NULL) {
+  if (is.null(bins)) {
+    bins <- seq(-1, 1, length.out = 11)
+  }
+
+  reshape_rho(rho) |>
+    mutate(
+      feature1 = factor(feature1, levels = rownames(t1d)[feature_order]),
+      feature2 = factor(feature2, levels = rownames(t1d)[feature_order]),
+      value = cut(value, bins)
+    ) |>
+    ggplot() +
+      geom_tile(aes(feature1, feature2, fill = value, col = value)) +
+      scale_fill_scico_d(palette = "lisbon") +
+      scale_color_scico_d(palette = "lisbon") +
+      labs(x = expression("Feature"~j), y = expression("Feature"~j^"'"), fill = expression(rho), col = expression(rho)) +
+      theme(
+        axis.text = element_blank(),
+        axis.ticks = element_blank()
+      )
+}

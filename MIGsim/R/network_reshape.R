@@ -36,3 +36,24 @@ reshape_correlations <- function(rho_hat) {
       )
     )
 }
+
+#' @export
+#' @importFrom dplyr bind_rows
+#' @importFrom glue glue
+subset_correlated <- function(x, top_cors) {
+  pairs_data <- list()
+  for (i in seq_len(nrow(top_cors))) {
+    feature1 <- rownames(x)[top_cors[i, 1]]
+    feature2 <- rownames(x)[top_cors[i, 2]]
+    pairs_data[[i]] <- data.frame(
+      feature1 = x[feature1, ],
+      feature2 = x[feature2, ],
+      pair = rep(glue("{feature1}-{feature2}"), ncol(x)),
+      correlation = cor(x[feature1, ], x[feature2, ])
+    )
+  }
+
+  res <- bind_rows(pairs_data)
+  rownames(res) <- NULL
+  res
+}
