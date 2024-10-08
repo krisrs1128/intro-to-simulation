@@ -117,7 +117,7 @@ correlation_heatmap <- function(rho, feature_order, bins = NULL) {
       geom_tile(aes(feature1, feature2, fill = value, col = value)) +
       scale_fill_scico_d(palette = "lisbon") +
       scale_color_scico_d(palette = "lisbon") +
-      labs(x = expression("Feature"~j), y = expression("Feature"~j^"'"), fill = expression(rho), col = expression(rho)) +
+      labs(x = "Features", y = "Features", fill = expression(rho), col = expression(rho)) +
       theme(
         axis.text = element_blank(),
         axis.ticks = element_blank()
