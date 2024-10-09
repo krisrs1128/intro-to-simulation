@@ -166,3 +166,17 @@ da_metrics <- function(results, null, level = 0.05, focus_col = ncol(results)) {
     value = c(length(intersect(null, flagged)) / max(1, length(flagged)), length(intersect(nonnull, flagged)) / length(nonnull))
   )
 }
+
+#' @export
+sample_n_ <- function(sim_object, sample_size) {
+  n_original <- ncol(sim_object@template)
+  rep_ix <- rep(seq_len(n_original), each = ceiling(sample_size / n_original))
+  new_data <- colData(sim_object@template)[rep_ix[1:sample_size], ] |>
+    as_tibble() |>
+    mutate(
+      newdata_index = row_number()
+    )
+
+  sim_return <- sample(sim_object, new_data = new_data)
+  return(sim_return)
+}
