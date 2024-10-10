@@ -167,6 +167,7 @@ da_metrics <- function(results, null, level = 0.05, focus_col = ncol(results)) {
   )
 }
 
+#' @importFrom scDesigner sample
 #' @export
 sample_n_ <- function(sim_object, sample_size) {
   n_original <- ncol(sim_object@template)
